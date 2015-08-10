@@ -5,9 +5,9 @@ Dialogic PowerMedia XMS
 Dialogic’s PowerMedia™ XMS is a powerful next-generation software media server that enables standards-based, real-time multimedia communications solutions for mobile and broadband environments. PowerMedia XMS supports standard media control interfaces such as MSML, VXML, NetAnn, and JSR 309, plus a Dialogic HTTP-based version of a RESTful API.
 
 
-dialogic-rest-java
+dialogic-XMSClientLibrary
 ===================
-Overview: A JAVA based repository using the PowerMedia XMS RESTful API which provides application developers using RESTful API over http transport to control media and call control resources of PowerMedia XMS.
+Overview: A JAVA based repository using the PowerMedia XMS RESTful and MSML API which provides application developers using RESTful API over http transport or MSML API to control media and call control resources of PowerMedia XMS.
 
 
 Repository Contents

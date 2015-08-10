@@ -9,15 +9,15 @@ public class XMSPlayCollectOptions {
 
     XMSMediaType m_mediaType;
 
-    String  m_terminateDigits;
-    String  m_offset;
-    String  m_delay;
-    String  m_repeat;
-    boolean m_isBargeEnable;
-    boolean m_clearDB;
-    String  m_timeoutValue; 
-    String  m_maxDigits; 
-    boolean m_toneDetection;     // 15-Jun-2012 dsl 
+    public String  m_terminateDigits;
+    public String  m_offset;
+    public String  m_delay;
+    public String  m_repeat;
+    public boolean m_isBargeEnable;
+    public boolean m_clearDB;
+    public String  m_timeoutValue; 
+    public String  m_maxDigits; 
+    public boolean m_toneDetection;     // 15-Jun-2012 dsl 
        
     /**
      * This will Instantiate and Reset all the values to their defaults

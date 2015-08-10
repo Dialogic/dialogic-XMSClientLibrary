@@ -287,7 +287,6 @@ public class XMSMsmlConnector extends XMSConnector implements SipListener, Runna
 //                        logger.debug("RESPONSE 200OK FOR INVITE RECIEVED \n" + response);
 
                         System.out.println(timeStamp() + "RESPONSE 200OK FOR INVITE -> " + responseEvent.getResponse());
-                        call.setDialog(dialog);
                         call = activeCallMap.get(dialog.getCallId().getCallId());
                         if (call != null) {
                             call.setDialog(dialog);
@@ -652,6 +651,7 @@ public class XMSMsmlConnector extends XMSConnector implements SipListener, Runna
 
     public void addToActiveMap(String id, XMSSipCall call) {
         activeCallMap.put(id, call);
+        System.out.println("Active call map" + activeCallMap);
     }
 
     @Override

@@ -73,6 +73,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
     static XMSEvent xmsEvent;
     static ObjectFactory objectFactory = new ObjectFactory();
     String filename;
+    static private Map<XMSMsmlCall, XMSMsmlCall> joinMap = new HashMap<>();
 
     public XMSMsmlCall(XMSMsmlConnector connector) {
         try {
@@ -336,20 +337,19 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                         && call.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO) {
                     v = true;
                 }
+                joinMap.put(this, c);
+                joinMap.put(c, this);
                 msmlSip.sendInfoWithoutConn(buildJoinMsml(this.msmlSip, c.msmlSip, v));
                 setState(XMSCallState.JOINING);
                 BlockIfNeeded(XMSEventType.CALL_INFO);
                 if (this.getMediaStatusCode() == 200) {
-                    BlockIfNeeded(XMSEventType.CALL_UPDATED);
-                    // return success based on the script
-                } else {
-                    return XMSReturnCode.FAILURE;
+                    return XMSReturnCode.SUCCESS;
                 }
             }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
-        return XMSReturnCode.SUCCESS;
+        return XMSReturnCode.FAILURE;
     }
 
     /**
@@ -559,13 +559,15 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                     xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, "", "", info);
                     setLastEvent(xmsEvent);
                 } else if (mediaControl != null) {
-                    if (this.caller != null) {
-                        this.caller.sendInfoWithoutConn(info);
+                    if (e.getCall() == this.msmlSip) {
+                        if (this.caller != null) {
+                            this.caller.sendInfoWithoutConn(info);
+                        }
+                    } else if (e.getCall() == this.caller) {
                     }
                     xmsEvent = new XMSEvent();
                     xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, "", "", info);
                     setLastEvent(xmsEvent);
-
                 } else {
                     Msml msml = unmarshalObject(new ByteArrayInputStream((byte[]) e.getReq().getRawContent()));
                     Msml.Event event = msml.getEvent();
@@ -733,6 +735,19 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                         xmsEvent.CreateEvent(XMSEventType.CALL_DISCONNECTED, this, "", "", e.getReq().toString());
                         setLastEvent(xmsEvent);
                         this.caller.doByeOk(e.getReq());
+                    } else if (getState() == XMSCallState.JOINING) {
+                        setState(XMSCallState.DISCONNECTED);
+                        xmsEvent.CreateEvent(XMSEventType.CALL_DISCONNECTED, this, "", "", e.getReq().toString());
+                        setLastEvent(xmsEvent);
+                        this.caller.doByeOk(e.getReq());
+                        this.msmlSip.createBye();
+                        XMSMsmlCall joinedCall = joinMap.get(this);
+                        if (joinedCall != null) {
+                            joinedCall.caller.createBye();
+                            joinedCall.msmlSip.createBye();
+                            joinMap.remove(this);
+                            joinMap.remove(joinedCall);
+                        }
                     } else {
                         if (e.getReq() != null) {
                             setState(XMSCallState.DISCONNECTED);
@@ -1005,12 +1020,14 @@ public class XMSMsmlCall extends XMSCall implements Observer {
         Collect collect = objectFactory.createCollect();
         if (!CollectDigitsOptions.m_timeoutValue.equalsIgnoreCase("0s")) {
             collect.setFdt(CollectDigitsOptions.m_timeoutValue);
-        } else {
-            collect.setFdt("10s");
         }
         collect.setIdt("2s");
         collect.setStarttimer(BooleanDatatype.TRUE);
-        collect.setCleardb(BooleanDatatype.TRUE);
+        if (CollectDigitsOptions.m_clearDB) {
+            collect.setCleardb(BooleanDatatype.TRUE);
+        } else {
+            collect.setCleardb(BooleanDatatype.FALSE);
+        }
         Collect.Pattern termDigPattern = objectFactory.createCollectPattern();
         termDigPattern.setDigits(CollectDigitsOptions.m_terminateDigits);
 
@@ -1094,27 +1111,14 @@ public class XMSMsmlCall extends XMSCall implements Observer {
 
             StreamType streamType2 = objectFactory.createStreamType();
             streamType2.setMedia("video");
-            streamType2.setDir("from-id1");
-            streamType2.setDisplay("1");
-
-            StreamType streamType3 = objectFactory.createStreamType();
-            streamType3.setMedia("video");
-            streamType3.setDir("to-id1");
 
             join.getStream().add(streamType1);
             join.getStream().add(streamType2);
-            join.getStream().add(streamType3);
         } else {
             StreamType streamType1 = objectFactory.createStreamType();
             streamType1.setMedia("audio");
-            streamType1.setDir("from-id1");
-
-            StreamType streamType2 = objectFactory.createStreamType();
-            streamType2.setMedia("audio");
-            streamType2.setDir("to-id1");
 
             join.getStream().add(streamType1);
-            join.getStream().add(streamType2);
         }
         msml.getMsmlRequest().add(join);
 
@@ -1153,8 +1157,16 @@ public class XMSMsmlCall extends XMSCall implements Observer {
         group.setTopology("parallel");
 
         Play play = objectFactory.createPlay();
-        play.setBarge(BooleanDatatype.TRUE);
-        play.setCleardb(BooleanDatatype.TRUE);
+        if (PlayCollectOptions.m_isBargeEnable) {
+            play.setBarge(BooleanDatatype.TRUE);
+        } else {
+            play.setBarge(BooleanDatatype.FALSE);
+        }
+        if (PlayCollectOptions.m_clearDB) {
+            play.setCleardb(BooleanDatatype.TRUE);
+        } else {
+            play.setCleardb(BooleanDatatype.FALSE);
+        }
 
         Play.Media media = objectFactory.createPlayMedia();
         Play.Media.Audio audio = objectFactory.createPlayMediaAudio();
@@ -1177,15 +1189,13 @@ public class XMSMsmlCall extends XMSCall implements Observer {
 
         Collect collect = objectFactory.createCollect();
         if (!CollectDigitsOptions.m_timeoutValue.equalsIgnoreCase("0s")) {
-            collect.setFdt(CollectDigitsOptions.m_timeoutValue);
-        } else {
-            collect.setFdt("10s");
+            collect.setFdt(PlayCollectOptions.m_timeoutValue);
         }
         collect.setIdt("2s");
         collect.setStarttimer(BooleanDatatype.TRUE);
         collect.setCleardb(BooleanDatatype.TRUE);
         Collect.Pattern termDigPattern = objectFactory.createCollectPattern();
-        termDigPattern.setDigits(CollectDigitsOptions.m_terminateDigits);
+        termDigPattern.setDigits(PlayCollectOptions.m_terminateDigits);
 
         Send sendDigit = objectFactory.createSend();
         sendDigit.setTarget("source");
@@ -1195,7 +1205,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
         collect.getPattern().add(termDigPattern);
 
         Collect.Pattern digitsPattern = objectFactory.createCollectPattern();
-        int length = Integer.parseInt(CollectDigitsOptions.m_maxDigits);
+        int length = Integer.parseInt(PlayCollectOptions.m_maxDigits);
         StringBuilder stringBuilder = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             stringBuilder.append("x");
