@@ -41,8 +41,8 @@ public class XMSConfDemo_3PartySync {
 
             Sleep(30000);
             myCall1.Dropcall();
-            myCall2.Dropcall();
-            myCall3.Dropcall();
+         //   myCall2.Dropcall();
+         //   myCall3.Dropcall();
         }
     }
 

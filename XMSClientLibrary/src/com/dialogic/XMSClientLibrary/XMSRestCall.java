@@ -74,7 +74,7 @@ public class XMSRestCall extends XMSCall{
      //int m_transactionId=0;
      private XMSRestConnector m_restconnector;
      
-  
+    private XMSConference m_inConf= null;
      
      /**
       * Default Constructor.  
@@ -104,6 +104,7 @@ public class XMSRestCall extends XMSCall{
         m_type = a_connector.getType();
         m_restconnector = (XMSRestConnector)a_connector;
         m_connector = a_connector;
+        m_inConf = null;
         Initialize();
         m_logger.info("Adding Myself as an Observer");
         this.addObserver(this);
@@ -283,6 +284,8 @@ public class XMSRestCall extends XMSCall{
 
         String l_urlext;
         SendCommandResponse RC ;
+        
+         
         if(getState() == XMSCallState.NULL ){
             logger.info("Call is already in NULL state, not sending drop but instead just returning");
             //TODO figure out if this should return success or bad state.
@@ -313,6 +316,11 @@ public class XMSRestCall extends XMSCall{
                 m_callIdentifier = null;
                 setCallType(XMSCallType.UNKNOWN);
                 setState(XMSCallState.NULL);
+                //If the party is inside a conf, need to notify the conf that it is removed.
+                    if(m_inConf!=null){
+                        m_inConf.RemovePartyfromList(this);
+                        m_inConf=null;
+                    }
                 return XMSReturnCode.SUCCESS;
 
             } else {  // delete call failed
@@ -843,6 +851,7 @@ public class XMSRestCall extends XMSCall{
         
          if (RC.get_scr_status_code() == 200){
             logger.info("AddToConference was a success");
+            m_inConf=a_conf;
             return XMSReturnCode.SUCCESS;
 
         } else {
@@ -879,8 +888,9 @@ public class XMSRestCall extends XMSCall{
         
          if (RC.get_scr_status_code() == 200){
             logger.info("RemoveFromParty was a success");
+            m_inConf=null;
             return XMSReturnCode.SUCCESS;
-
+            
         } else {
 
             logger.info("RemoveFromParty Failed, Status Code: " + RC.get_scr_status_code());
@@ -1323,6 +1333,13 @@ public class XMSRestCall extends XMSCall{
                 } else if (l_evt.eventType.contentEquals("hangup")) {
                     logger.info("Processing hangup event");
                     setState(XMSCallState.DISCONNECTED);
+                    
+                    //If the party is inside a conf, need to notify the conf that it is removed.
+                    if(m_inConf!=null){
+                        m_inConf.RemovePartyfromList(this);
+                        m_inConf=null;
+                    }
+                    
                     EventData[] l_datalist=l_evt.event.getEventDataArray();// 30-Jul-2012 dsl
                     for(EventDataDocument.EventData ed: l_datalist){                            // 30-Jul-2012 dsl
                         if (ed.getName().contentEquals(EventDataName.REASON.toString())){                              // 30-Jul-2012 dsl

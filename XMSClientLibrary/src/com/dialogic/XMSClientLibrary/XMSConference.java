@@ -36,7 +36,8 @@ public abstract class XMSConference extends XMSObject {
     public XMSConferenceOptions ConferenceOptions = new XMSConferenceOptions();
     public XMSPlayOptions PlayOptions = new XMSPlayOptions();
     public XMSAddOptions AddOptions = new XMSAddOptions();
-
+    public XMSRecordOptions RecordOptions = new XMSRecordOptions();
+    
     /**
      * CTor for the Object. Default takes no parms
      */
@@ -58,6 +59,7 @@ public abstract class XMSConference extends XMSObject {
         return XMSReturnCode.NOT_IMPLEMENTED;
     }
 
+    
     /**
      * Remove the Call from the conference
      *
@@ -67,7 +69,19 @@ public abstract class XMSConference extends XMSObject {
     public XMSReturnCode Remove(XMSCall a_call) {
         return XMSReturnCode.NOT_IMPLEMENTED;
     }
-
+   /**
+      * Returns the list of the parties currently inside the list
+      * @return 
+      */
+     public void RemovePartyfromList(XMSCall call){
+         m_logger.info("Removing "+call+" from partylist");
+         m_partylist.remove(call);
+         if(GetPartyCount()==0 && ConferenceOptions.m_DestroyWhenEmpty){
+            m_logger.info("Conference is empty, deleteing it");
+            Destroy();
+        }
+        return;
+     }
     /**
      * Returns the number of calls in the conference.
      *
@@ -96,4 +110,47 @@ public abstract class XMSConference extends XMSObject {
     public XMSReturnCode Play(String a_playfile) {
         return XMSReturnCode.NOT_IMPLEMENTED;
     }
+     /**
+      * Plays out a file to the parties currently in the conference
+      * @param a_playfile
+      * @param a_Region - The screen region to play the file into
+      * @return 
+      */
+     //TODO Get Conference play working.  Will need to add all the enablement for the events as well
+     public XMSReturnCode PlayRegion(String a_playfile,String a_Region){
+         return XMSReturnCode.NOT_IMPLEMENTED;
+     }
+        /**
+      * Record the conference
+      * @param a_recfile
+      * @return 
+      */
+     //TODO Get Conference play working.  Will need to add all the enablement for the events as well
+     public XMSReturnCode Record(String a_recfile){
+         return XMSReturnCode.NOT_IMPLEMENTED;
+     }
+     /** 
+      * Force the Destroy the Conference resource from the server
+      * By default this is done when the last participant is removed
+      * @return 
+      */
+     public XMSReturnCode Destroy(){
+         return XMSReturnCode.NOT_IMPLEMENTED;
+     }
+     /** 
+      * Force the Creation of the Conference resource on the server
+      * By default this is done when you add the first participant
+      * @return 
+      */
+     public XMSReturnCode Create(){
+         return XMSReturnCode.NOT_IMPLEMENTED;
+     }
+        /** 
+      * Force the Stop of the last active IO function
+      * By default this is done when you add the first participant
+      * @return 
+      */
+     public XMSReturnCode Stop(){
+         return XMSReturnCode.NOT_IMPLEMENTED;
+     }
 }

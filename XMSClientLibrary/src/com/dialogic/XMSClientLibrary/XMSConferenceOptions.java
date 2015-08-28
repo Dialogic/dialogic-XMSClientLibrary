@@ -19,7 +19,8 @@ public class XMSConferenceOptions {
     public boolean m_DigitClampingEnabled = true;
     public boolean m_AGCEnabled = true;
     public boolean m_ECEnabled = true;
-
+    boolean m_DestroyWhenEmpty = true;
+   
     public XMSConferenceOptions() {
         Reset();
     }
@@ -34,7 +35,7 @@ public class XMSConferenceOptions {
         m_DigitClampingEnabled = true;
         m_AGCEnabled = true;
         m_ECEnabled = true;
-
+        m_DestroyWhenEmpty = true;
     }
 
     public void SetMaxParties(int a_maxparties) {
@@ -73,7 +74,14 @@ public class XMSConferenceOptions {
     public void EnableEchoCancellation(boolean a_isenabled) {
         m_ECEnabled = a_isenabled;
     }
-
+  /**
+      * Enable the delete of the conference when the last party
+      * is removed
+      * @param a_isenabled 
+      */
+     public void EnableDestroyWhenEmpty(boolean a_isenabled){
+         m_DestroyWhenEmpty=a_isenabled;
+     }
     @Override
     public String toString() {
         return "m_MaxParties=" + m_MaxParties
@@ -84,7 +92,8 @@ public class XMSConferenceOptions {
                 + " m_BeepEnabled=" + m_BeepEnabled
                 + " m_DigitClampingEnabled=" + m_DigitClampingEnabled
                 + " m_AGCEnabled=" + m_AGCEnabled
-                + " m_ECEnabled=" + m_ECEnabled;
+                + " m_ECEnabled="+m_ECEnabled
+                + " m_DestroyWhenEmpty="+m_DestroyWhenEmpty;
     }
 
 }

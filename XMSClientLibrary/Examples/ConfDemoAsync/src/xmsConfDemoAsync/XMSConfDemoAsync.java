@@ -17,7 +17,7 @@ public class XMSConfDemoAsync implements XMSEventCallback{
     boolean isRunning=true; //Set this to fales to get it to exit.
     
     XMSObjectFactory myFactory = new XMSObjectFactory();
-    XMSConnector myConnector = myFactory.CreateConnector("XMSConnectorConfig.xml");
+    XMSConnector myConnector = myFactory.CreateConnector();
     XMSCall myCall1 = myFactory.CreateCall(myConnector);
     XMSCall myCall2 = myFactory.CreateCall(myConnector);
     XMSCall myCall3 = myFactory.CreateCall(myConnector);
@@ -38,7 +38,8 @@ public class XMSConfDemoAsync implements XMSEventCallback{
                 break;
             
             case CALL_DISCONNECTED:  // The far end hung up will simply wait for the media
-                myConf.Remove(myCall);
+               // No need to manually remove, party is removed on disconnect automaticly now.
+               // myConf.Remove(myCall);
                 myCall.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
                 myCall.Waitcall();
                 break;
@@ -59,21 +60,21 @@ public class XMSConfDemoAsync implements XMSEventCallback{
         //Enable all events to go back to my event handler
             myCall2.EnableAllEvents(this);
         //Set to a Video Call
-            myCall1.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
+            myCall2.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
         //Wait for an inbound call and start the state machine
             myCall2.Waitcall();  
        
         //Enable all events to go back to my event handler
             myCall3.EnableAllEvents(this);
         //Set to a Video Call
-            myCall1.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
+            myCall3.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
         //Wait for an inbound call and start the state machine
          myCall3.Waitcall();  
        
         //Enable all events to go back to my event handler
             myCall4.EnableAllEvents(this);
         //Set to a Video Call
-            myCall1.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
+            myCall4.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
         //Wait for an inbound call and start the state machine
             myCall4.Waitcall();  
        

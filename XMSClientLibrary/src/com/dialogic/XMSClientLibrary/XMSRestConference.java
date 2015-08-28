@@ -69,7 +69,7 @@ public class XMSRestConference extends XMSConference{
         m_connector = a_connector;
         Initialize();
         m_logger.info("Adding Myself as an Observer");
-        this.addObserver(this);
+    //    this.addObserver(this);
         
      }  
     
@@ -77,7 +77,8 @@ public class XMSRestConference extends XMSConference{
         FunctionLogger logger=new FunctionLogger("Create",this,m_logger);
         logger.args("ConferenceOptions="+ConferenceOptions); 
         
-            logger.info("There is not CallIdentifier, makeing a new conference before proceeding");
+        
+        
             String XMLPAYLOAD;
             SendCommandResponse RC ;
 
@@ -98,6 +99,7 @@ public class XMSRestConference extends XMSConference{
         
             if (RC.get_scr_status_code() == 201){
                 logger.info("Conference Create Success, ID: " + RC.get_scr_identifier());
+                SetCallIdentifier(RC.get_scr_identifier());
             } else {
                 
                 logger.info("Conference Create Failed, Status Code: " + RC.get_scr_status_code());
@@ -115,16 +117,19 @@ public class XMSRestConference extends XMSConference{
         FunctionLogger logger=new FunctionLogger("Add",this,m_logger);
         logger.args("Call="+a_call+"  ConferenceOptions="+ConferenceOptions); 
         if(this.getCallIdentifier() == null){
+            logger.info("CallIdentifier is null, making conference");
             if(Create() == XMSReturnCode.FAILURE){
                 return XMSReturnCode.FAILURE;
             }
 
         }
+        logger.info("CallIdentifier "+this.getCallIdentifier()+" found");
         if(a_call instanceof  XMSRestCall){
             if(((XMSRestCall)a_call).AddToConference(this) == XMSReturnCode.FAILURE){
                 return XMSReturnCode.FAILURE;
             }
             m_partylist.add(a_call);
+            //a_call.addObserver(this);
         } else {
             return XMSReturnCode.FAILURE;
         }
@@ -135,31 +140,78 @@ public class XMSRestConference extends XMSConference{
     public XMSReturnCode Remove(XMSCall a_call){
       FunctionLogger logger=new FunctionLogger("Remove",this,m_logger);
         logger.args("Call="+a_call); 
-        
+       //TODO- Add checkt to make sure that a_call is valid and is still in the caller list.
         if(a_call instanceof  XMSRestCall){
-            if(((XMSRestCall)a_call).RemoveFromConference(this) == XMSReturnCode.FAILURE){
-                return XMSReturnCode.FAILURE;
-            }
             m_partylist.remove(a_call);
+            if(((XMSRestCall)a_call).RemoveFromConference(this) == XMSReturnCode.FAILURE){
+                if(GetPartyCount()==0 && ConferenceOptions.m_DestroyWhenEmpty){
+                   Destroy();
+                }
+                return XMSReturnCode.FAILURE;
+               
+            }
+                    
+        
         } else {
             return XMSReturnCode.FAILURE;
         }
-        //TODO put in Remove when call list gets to 0 in conference
+        
+        if(GetPartyCount()==0 && ConferenceOptions.m_DestroyWhenEmpty){
+            Destroy();
+        }
         return XMSReturnCode.SUCCESS;
     
 
     } // end remove
+ public XMSReturnCode Destroy(){
+        FunctionLogger logger=new FunctionLogger("Destroy",this,m_logger);
+        
+               
+            if(this.getCallIdentifier() == null){
+                logger.info("Call identifier is null");
+                return XMSReturnCode.SUCCESS;
+            }
+            
+            for( XMSCall call: m_partylist){
+                    
+                     ((XMSRestCall)call).RemoveFromConference(this);
+                 }
+ 
+            SendCommandResponse RC ;
 
-  /**
+            
+            String l_urlext;
+            l_urlext = "conferences/" + m_callIdentifier;
+            RC = m_connector.SendCommand(this,RESTOPERATION.DELETE, l_urlext, null);
+        
+            if (RC.get_scr_status_code() == 204){
+                logger.info("Conference Delete Success, ID: " + RC.get_scr_identifier());
+                this.m_connector.RemoveCallFromActiveCallList(m_callIdentifier);
+                 m_callIdentifier = null;
+                 m_partylist.clear();
+            } else {
+                
+                logger.info("Conference Delete Failed, Status Code: " + RC.get_scr_status_code());
+                
+                return XMSReturnCode.FAILURE;
+
+            }
+        
+            
+        
+        return XMSReturnCode.SUCCESS;
+    }   
+ 
+ /**
      * Play a file
      * @param a_filelist - A list of Files to be played
      * @return
      */
     
     @Override
-     public XMSReturnCode Play(String a_file){
-        FunctionLogger logger=new FunctionLogger("PlayList",this,m_logger);
-        logger.args("Playfile "+a_file+" " + PlayOptions);
+     public XMSReturnCode PlayRegion(String a_file, String a_Region){
+        FunctionLogger logger=new FunctionLogger("PlayRegion",this,m_logger);
+        logger.args("Region "+a_Region+" Playfile "+a_file+" " + PlayOptions);
         String XMLPAYLOAD;
         SendCommandResponse RC ;
 
@@ -171,7 +223,7 @@ public class XMSRestConference extends XMSConference{
         ArrayList<String> l_playlist = new ArrayList<String>();
         l_playlist.add(a_file);
         
-        XMLPAYLOAD = buildPlayPayload(l_playlist); 
+        XMLPAYLOAD = buildPlayPayload(l_playlist,a_Region); 
 
         //logger.info("Sending message ---->  " + XMLPAYLOAD);
         RC = m_connector.SendCommand(this,RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
@@ -200,7 +252,139 @@ public class XMSRestConference extends XMSConference{
         }
         
     } // end play
+  /**
+     * Play a file
+     * @param a_filelist - A list of Files to be played
+     * @return
+     */
     
+    @Override
+     public XMSReturnCode Play(String a_file){
+        FunctionLogger logger=new FunctionLogger("PlayList",this,m_logger);
+        logger.args("Playfile "+a_file+" " + PlayOptions);
+        String XMLPAYLOAD;
+        SendCommandResponse RC ;
+
+        
+        String l_urlext;
+        l_urlext = "conferences/" + m_callIdentifier;
+        
+       
+        ArrayList<String> l_playlist = new ArrayList<String>();
+        l_playlist.add(a_file);
+        
+        XMLPAYLOAD = buildPlayPayload(l_playlist,"0"); 
+
+        //logger.info("Sending message ---->  " + XMLPAYLOAD);
+        RC = m_connector.SendCommand(this,RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
+        
+         if (RC.get_scr_status_code() == 200){
+            m_pendingtransactionInfo.setDescription("Play file(s)="+l_playlist);
+            m_pendingtransactionInfo.setTransactionId(RC.get_scr_transaction_id());
+            m_pendingtransactionInfo.setResponseData(RC);
+            
+            //setState(XMSCallState.PLAY);
+                    try {
+                        BlockIfNeeded(XMSEventType.CALL_PLAY_END);
+                    } catch (InterruptedException ex) {
+                        logger.error("Exception:"+ex);
+                    }
+
+                    return XMSReturnCode.SUCCESS;
+
+        } else {
+
+            logger.info("Play Failed, Status Code: " + RC.get_scr_status_code());
+            
+            //setState(XMSCallState.NULL);
+            return XMSReturnCode.FAILURE;
+
+        }
+        
+    } // end play
+    /**
+     * Record a file
+     * @param a_file - File to record
+     * @return
+     */
+    
+    @Override
+     public XMSReturnCode Record(String a_file){
+      FunctionLogger logger=new FunctionLogger("Record",this,m_logger);
+        logger.args("Record "+a_file+" " + RecordOptions);
+        String XMLPAYLOAD;
+        SendCommandResponse RC ;
+
+        
+        String l_urlext;
+        l_urlext = "conferences/" + m_callIdentifier;
+        
+       
+        
+        XMLPAYLOAD = buildRecordPayload(a_file); 
+
+        //logger.info("Sending message ---->  " + XMLPAYLOAD);
+        RC = m_connector.SendCommand(this,RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
+        
+         if (RC.get_scr_status_code() == 200){
+            m_pendingtransactionInfo.setDescription("Record file="+a_file);
+            m_pendingtransactionInfo.setTransactionId(RC.get_scr_transaction_id());
+            m_pendingtransactionInfo.setResponseData(RC);
+            
+            //setState(XMSCallState.PLAY);
+                    try {
+                        BlockIfNeeded(XMSEventType.CALL_RECORD_END);
+                    } catch (InterruptedException ex) {
+                        logger.error("Exception:"+ex);
+                    }
+
+                    return XMSReturnCode.SUCCESS;
+
+        } else {
+
+            logger.info("Record Failed, Status Code: " + RC.get_scr_status_code());
+            
+            //setState(XMSCallState.NULL);
+            return XMSReturnCode.FAILURE;
+
+        }
+          
+    } // end record
+     /** 
+      * Force the Stop of the last active IO function
+      * @return 
+      */
+         @Override
+    public XMSReturnCode Stop(){
+         FunctionLogger logger=new FunctionLogger("Stop",this,m_logger);
+         
+         
+        String XMLPAYLOAD;
+        SendCommandResponse RC ;
+
+        String l_urlext;
+        l_urlext = "conferences/" + m_callIdentifier;
+        
+            
+        
+        XMLPAYLOAD = buildStopPayload(m_pendingtransactionInfo.getTransactionId()); 
+
+        //logger.info("Sending message ---->  " + XMLPAYLOAD);
+        RC = m_connector.SendCommand(this,RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
+        
+         if (RC.get_scr_status_code() == 200){
+            
+                    return XMSReturnCode.SUCCESS;
+
+        } else {
+
+            logger.info("Stop Failed, Status Code: " + RC.get_scr_status_code());
+            //setState(XMSCallState.NULL);
+            return XMSReturnCode.FAILURE;
+
+        }
+        
+    }// end Stop
       /**
      * This is the Notify handler that will be called by EventThread when
      * new events are created.
@@ -212,7 +396,7 @@ public class XMSRestConference extends XMSConference{
         FunctionLogger logger=new FunctionLogger("update",this,m_logger);
         logger.args("obj="+obj+" arg="+arg);
         XMSEvent l_callbackevt = new XMSEvent();
-        if (arg instanceof XMSRestEvent){
+        if (arg instanceof XMSRestEvent ){
             XMSRestEvent l_evt=(XMSRestEvent) arg;
             //TODO This Method is getting a little combersome, may want to extend out to private OnXXXXEvent functions to segment the readability.
             //TODO Should we support the Ringing event?
@@ -370,7 +554,7 @@ public class XMSRestConference extends XMSConference{
      *
      * HISTORY      :
      *************************************************************************/
-    private String buildPlayPayload(ArrayList <String> a_playlist) {
+    private String buildPlayPayload(ArrayList <String> a_playlist, String a_Region) {
         FunctionLogger logger=new FunctionLogger("buildPlayPayload",this,m_logger);
         String l_rqStr = "";
         String uriString = "";
@@ -414,7 +598,7 @@ public class XMSRestConference extends XMSConference{
 
         l_play.setTerminateDigits(PlayOptions.m_terminateDigits); // Hard code this for now..
         //l_play.setTransactionId(getCallIdentifier()+"_"+m_transactionId++); // Hard code this for now..
-        
+        l_play.setRegion(a_Region);
         // Setup your play list and put it in playsource
         for (int i = 0; i < a_playlist.size(); i++) {
 //                logger.debug("playList entry["+i+"] - " + uriString);
@@ -457,6 +641,143 @@ public class XMSRestConference extends XMSConference{
         //logger.debug ("Returning Payload:\n " + l_rqStr);
         return l_rqStr;  // Return the requested string...
     } // end buildPlayPayload
+    
+    private String buildRecordPayload(String a_file) {
+        FunctionLogger logger=new FunctionLogger("buildRecordPayload",this,m_logger);
+        String l_rqStr = "";
+        String uriString = "";
+
+        WebServiceDocument l_WMSdoc;
+        WebServiceDocument.WebService l_WMS;
+
+        XmlNMTOKEN  l_ver;
+
+        
+        ConferenceDocument.Conference l_conf;
+        ConfActionDocument.ConfAction l_confAction;
+        //CallActionDocument.CallAction l_callAction; // Call Action instance
+
+        RecordDocument.Record l_rec;
+        
+
+        // Create a new Web Service Doc Instance
+        l_WMSdoc = WebServiceDocument.Factory.newInstance();
+        l_WMS = l_WMSdoc.addNewWebService();
+
+        // Create a new XMLToken Instance
+        l_ver = XmlNMTOKEN.Factory.newInstance();
+        l_ver.setStringValue("1.0");
+        l_WMS.xsetVersion(l_ver);
+
+        // add a new call
+        l_conf = l_WMS.addNewConference();
+
+        // Add a new Call Action to the call
+        l_confAction = l_conf.addNewConfAction();
+
+        // Add a new Record to the callAction
+        l_rec = l_confAction.addNewRecord();
+
+        l_rec.setTerminateDigits(RecordOptions.m_terminateDigits); // Hard code this for now..
+        
+                uriString = a_file;
+                String l_uristring=uriString;
+                
+               
+                if(uriString.toLowerCase().endsWith(".wav") || uriString.toLowerCase().endsWith(".vid")){
+                    l_uristring=uriString.substring(0, uriString.length()-4);
+                }
+                // TO DO: May need to append the MediaDefaultDirectory
+
+                l_rec.setRecordingUri("file://"+l_uristring);
+  //              logger.debug("Added [" + uriString + "]");
+               
+        
+
+        //logger.debug("RAW REST generated...." + l_WMS.toString());
+        ByteArrayOutputStream l_newDialog = new ByteArrayOutputStream();
+
+        try {
+            l_WMSdoc.save(l_newDialog);
+            l_rqStr = l_WMSdoc.toString();
+
+            } catch (IOException ex) {
+            logger.error(ex);
+        }
+
+        //logger.debug ("Returning Payload:\n " + l_rqStr);
+        return l_rqStr;  // Return the requested string...
+    } // end buildPlayPayload
+
+   /**
+     * CLASS TYPE   :   private
+     * METHOD       :   buildStopPayload
+     *
+     * DESCRIPTION  :   Builds Stop Payload
+     *
+     *
+     *
+     * RETURN       :   Payload string
+     *
+     * Author(s)    :   Dan Wolanski
+     * Created      :   6/8/2012
+     * Updated      :   6/8/2012
+     *
+     *
+     * HISTORY      :
+     *************************************************************************/
+    private String buildStopPayload(String a_transactionID) {
+        FunctionLogger logger=new FunctionLogger("buildStopPayload",this,m_logger);
+       
+        String l_rqStr = "";
 
 
+        WebServiceDocument l_WMSdoc;
+        WebServiceDocument.WebService l_WMS;
+
+        XmlNMTOKEN  l_ver;
+
+        ConferenceDocument.Conference l_conf;
+        ConfActionDocument.ConfAction l_confAction;
+        //CallActionDocument.CallAction l_callAction; // Call Action instance
+
+       
+        StopDocument.Stop l_stop;
+        
+        // Create a new Web Service Doc Instance
+        l_WMSdoc = WebServiceDocument.Factory.newInstance();
+        l_WMS = l_WMSdoc.addNewWebService();
+
+        // Create a new XMLToken Instance
+        l_ver = XmlNMTOKEN.Factory.newInstance();
+        l_ver.setStringValue("1.0");
+        l_WMS.xsetVersion(l_ver);
+
+        // add a new call
+        l_conf = l_WMS.addNewConference();
+
+        // Add a new Call Action to the call
+        l_confAction = l_conf.addNewConfAction();
+
+
+        // Add a new Play to the callAction
+        l_stop = l_confAction.addNewStop();
+        l_stop.setTransactionId(a_transactionID); 
+
+
+       // logger.debug("RAW REST generated...." + l_WMS.toString());
+        ByteArrayOutputStream l_newDialog = new ByteArrayOutputStream();
+
+        try {
+            l_WMSdoc.save(l_newDialog);
+            l_rqStr = l_WMSdoc.toString();
+
+            } catch (IOException ex) {
+            logger.error(ex);
+        }
+
+      //  logger.debug ("Returning Payload:\n " + l_rqStr);
+        return l_rqStr;  // Return the requested string...
+
+    } // end buildStopPayload
 }
