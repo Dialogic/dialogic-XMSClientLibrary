@@ -25,6 +25,7 @@ import com.dialogic.xms.msml.Send;
 import com.dialogic.xms.msml.StreamType;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.Inet4Address;
@@ -44,6 +45,14 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -564,6 +573,19 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                             this.caller.sendInfoWithoutConn(info);
                         }
                     } else if (e.getCall() == this.caller) {
+                        /*try {
+                         Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                         transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+                         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+                         StreamResult result = new StreamResult(new StringWriter());
+                         Source xml = new StreamSource(new StringReader(info));
+                         transformer.transform(xml, result);
+                         String xmlString = result.getWriter().toString();
+                         System.out.println("PRINTING -> " + xmlString);
+                         } catch (Exception ex) {
+                         Logger.getLogger(XMSMsmlCall.class.getName()).log(Level.SEVERE, null, ex);
+                         }*/
                     }
                     xmsEvent = new XMSEvent();
                     xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, "", "", info);
