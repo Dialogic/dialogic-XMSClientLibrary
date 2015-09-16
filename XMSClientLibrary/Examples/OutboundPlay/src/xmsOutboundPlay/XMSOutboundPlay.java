@@ -29,6 +29,7 @@ public class XMSOutboundPlay {
         String OutboundAddress = null;
         String PlayFile = null;
         boolean isVideo = true;
+        boolean doCPA = true;
 
         try {
 
@@ -44,6 +45,9 @@ public class XMSOutboundPlay {
             if (prop.getProperty("isVideo").contains("false")) {
                 isVideo = false;
             }
+            if (prop.getProperty("doCPA").contains("false")) {
+                doCPA = false;
+            }
 
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -52,6 +56,9 @@ public class XMSOutboundPlay {
         //Make an outbound call to the same address that you just received a call from
         if (isVideo) {
             myCall.MakecallOptions.SetMediaType(XMSMediaType.VIDEO);
+        }
+        if(doCPA){
+            myCall.MakecallOptions.EnableCPA(doCPA);
         }
         myCall.Makecall(OutboundAddress);
 
