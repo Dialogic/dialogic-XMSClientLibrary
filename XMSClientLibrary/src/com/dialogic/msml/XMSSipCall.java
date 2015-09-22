@@ -67,6 +67,7 @@ public class XMSSipCall extends Observable {
     static XMSSipCall xmsCall;
     boolean isACKOn200 = true;
     boolean isOKOnInfo = true;
+    private boolean isCPA = false;
     static boolean isInvite = false;
     private Request lastInfo = null;
     private Map<String, Object> headers = new HashMap<>();
@@ -221,7 +222,7 @@ public class XMSSipCall extends Observable {
         HeaderFactory headerFactory = sipConnector.getHeaderFactory();
 
         try {
-            SipURI requestUri = addressFactory.createSipURI(toUserId, toAdr);
+            SipURI requestUri = addressFactory.createSipURI(toUserId, toAdr);            
             FromHeader fromHeader;
             if (this.getFromHeader(this.getFromAddress()) != null) {
                 fromHeader = this.getFromHeader(this.getFromAddress());
@@ -261,16 +262,29 @@ public class XMSSipCall extends Observable {
             MaxForwardsHeader maxForwardsHeader = headerFactory.createMaxForwardsHeader(70);
 
             Request request = null;
-            if (this.getLocalSdp() != null) {
-                request = sipConnector.getMessageFactory().createRequest(requestUri, Request.INVITE,
-                        callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwardsHeader,
-                        contTypeHeader, this.getLocalSdp().getBytes());
+            if(isCPA) {
+                String uri = requestUri.toString()+";cpa=yes";
+                URI reqUri = addressFactory.createURI(uri);
+                if (this.getLocalSdp() != null) {
+                    request = sipConnector.getMessageFactory().createRequest(reqUri, Request.INVITE,
+                            callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwardsHeader,
+                            contTypeHeader, this.getLocalSdp().getBytes());
+                } else {
+                    this.setACKOn200(Boolean.FALSE);
+                    request = sipConnector.getMessageFactory().createRequest(reqUri, Request.INVITE,
+                            callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwardsHeader);
+                }
             } else {
-                this.setACKOn200(Boolean.FALSE);
-                request = sipConnector.getMessageFactory().createRequest(requestUri, Request.INVITE,
-                        callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwardsHeader);
+                if (this.getLocalSdp() != null) {
+                    request = sipConnector.getMessageFactory().createRequest(requestUri, Request.INVITE,
+                            callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwardsHeader,
+                            contTypeHeader, this.getLocalSdp().getBytes());
+                } else {
+                    this.setACKOn200(Boolean.FALSE);
+                    request = sipConnector.getMessageFactory().createRequest(requestUri, Request.INVITE,
+                            callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwardsHeader);
+                }
             }
-
 //            Header supportedHeader = headerFactory.createHeader("Supported", "timer");
 //            Header requireHeader = headerFactory.createHeader("Require", "timer");
 //            Header sessionExpires = headerFactory.createHeader("Session-Expires", "90;refresher=uas");
@@ -951,5 +965,19 @@ public class XMSSipCall extends Observable {
      */
     public void setLastInfo(Request lastInfo) {
         this.lastInfo = lastInfo;
+    }
+
+    /**
+     * @return the isCPA
+     */
+    public boolean isIsCPA() {
+        return isCPA;
+    }
+
+    /**
+     * @param isCPA the isCPA to set
+     */
+    public void setIsCPA(boolean isCPA) {
+        this.isCPA = isCPA;
     }
 }

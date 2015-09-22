@@ -75,6 +75,13 @@ public class SelectorForm extends javax.swing.JFrame {
             this.setVisible(true);
             this.setLocationRelativeTo(null);
             this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+            this.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                    System.exit(0);
+                }
+            });
             this.setResizable(false);
             File f = new File("SelectorConfiguration.xml");
             if (f.exists()) {

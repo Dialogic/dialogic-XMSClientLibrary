@@ -46,7 +46,7 @@ public class XMSPlayCollectOptions {
         m_isBargeEnable     = true;
         m_clearDB           = true;
         m_maxDigits         = "1";   
-        m_timeoutValue      = "";
+        m_timeoutValue      = "0s";
         m_toneDetection     = false;  // 15-Jun-2012 dsl
     
     } // end Reset()

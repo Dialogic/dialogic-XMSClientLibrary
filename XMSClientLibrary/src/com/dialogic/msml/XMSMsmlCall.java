@@ -168,6 +168,9 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                 if (!MakecallOptions.m_sdp.isEmpty()) {
                     this.msmlSip.setLocalSdp(MakecallOptions.m_sdp);
                 }
+                if(MakecallOptions.m_cpaEnabled == true) {
+                    this.msmlSip.setIsCPA(Boolean.TRUE);
+                }
                 this.msmlSip.createInviteRequest(this.msmlSip.getToUser(), this.msmlSip.getToAddress());
 
                 if (this.caller == null) {
@@ -263,6 +266,9 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                 BlockIfNeeded(XMSEventType.CALL_INFO);
                 if (this.getMediaStatusCode() == 200) {
                     BlockIfNeeded(XMSEventType.CALL_PLAY_END);
+                    if (xmsEvent != null && xmsEvent.getData() != null && xmsEvent.getData().equalsIgnoreCase("410")) {
+                        return XMSReturnCode.FAILURE;
+                    }
                 } else {
                     return XMSReturnCode.FAILURE;
                 }
@@ -292,6 +298,9 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                 BlockIfNeeded(XMSEventType.CALL_INFO);
                 if (this.getMediaStatusCode() == 200) {
                     BlockIfNeeded(XMSEventType.CALL_RECORD_END);
+                    if (xmsEvent != null && xmsEvent.getData() != null && xmsEvent.getData().equalsIgnoreCase("410")) {
+                        return XMSReturnCode.FAILURE;
+                    }
                 } else {
                     return XMSReturnCode.FAILURE;
                 }
@@ -613,33 +622,38 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                                     eventNameValueList.get(i + 1).getValue());
                         }
                         if (dialogType != null) {
-                            xmsEvent = new XMSEvent();
-                            xmsEvent.setInternalData(info);
-                            switch (dialogType) {
-                                case "Play":
-                                    String amt = events.get("play.amt");
-                                    String playReason = events.get("play.end");
-                                    xmsEvent.CreateEvent(XMSEventType.CALL_PLAY_END, this, amt, playReason, info);
-                                    xmsEvent.setReason(playReason);
-                                    setLastEvent(xmsEvent);
-                                    break;
-                                case "Record":
-                                    String len = events.get("record.len");
-                                    String recordReason = events.get("record.end");
-                                    xmsEvent.CreateEvent(XMSEventType.CALL_RECORD_END, this, len, recordReason, info);
-                                    xmsEvent.setReason(recordReason);
-                                    setLastEvent(xmsEvent);
-                                    break;
-                                default:
-                                    xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, "", "", info);
-                                    setLastEvent(xmsEvent);
-                                    break;
+                            if (xmsEvent != null && xmsEvent.getReason().equalsIgnoreCase("term-digit")) {
+                                // play collect, do nothing so that the last event contains the term-digit
+                            } else {
+                                xmsEvent = new XMSEvent();
+                                xmsEvent.setInternalData(info);
+                                switch (dialogType) {
+                                    case "Play":
+                                        String amt = events.get("play.amt");
+                                        String playReason = events.get("play.end");
+                                        xmsEvent.CreateEvent(XMSEventType.CALL_PLAY_END, this, amt, playReason, info);
+                                        xmsEvent.setReason(playReason);
+                                        setLastEvent(xmsEvent);
+                                        break;
+                                    case "Record":
+                                        String len = events.get("record.len");
+                                        String recordReason = events.get("record.end");
+                                        xmsEvent.CreateEvent(XMSEventType.CALL_RECORD_END, this, len, recordReason, info);
+                                        xmsEvent.setReason(recordReason);
+                                        setLastEvent(xmsEvent);
+                                        break;
+                                    default:
+                                        xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, "", "", info);
+                                        setLastEvent(xmsEvent);
+                                        break;
+                                }
                             }
                         }
                     } else if (eventName != null && eventName.equalsIgnoreCase("nomatch")
                             || eventName != null && eventName.equalsIgnoreCase("dtmfexit")
                             || eventName != null && eventName.equalsIgnoreCase("termkey")
-                            || eventName != null && eventName.equalsIgnoreCase("noinput")) {
+                            || eventName != null && eventName.equalsIgnoreCase("noinput")
+                            || eventName != null && eventName.equalsIgnoreCase("TermkeyRecieved")) {
                         xmsEvent = new XMSEvent();
                         List<JAXBElement<String>> eventNameValueList = event.getNameAndValue();
                         Map<String, String> events = new HashMap<>();
@@ -684,9 +698,6 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                                 List<JAXBElement<String>> eventNameValueList = event.getNameAndValue();
                                 Map<String, String> events = new HashMap<>();
                                 for (int i = 0, n = eventNameValueList.size(); i < n; i += 2) {
-                                    System.out.println("[i] -> " + eventNameValueList.get(i).getValue());
-                                    System.out.println("[i+1] -> " + eventNameValueList.get(i + 1).getValue());
-
                                     events.put(eventNameValueList.get(i).getValue(),
                                             eventNameValueList.get(i + 1).getValue());
                                 }
@@ -695,6 +706,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                                 xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, dialogExitStatus, dialogExitDesc, info);
                                 xmsEvent.setReason(dialogExitDesc);
                                 setLastEvent(xmsEvent);
+                                UnblockIfNeeded(xmsEvent);
                             } else {
                                 UnblockIfNeeded(xmsEvent);
                             }
@@ -872,7 +884,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
             Send sendDigit = objectFactory.createSend();
             sendDigit.setTarget("source");
             sendDigit.setEvent("TermkeyRecieved");
-            sendDigit.setNamelist("dtmf.digits dtmf.len dtmf.last");
+            sendDigit.setNamelist("dtmf.digits dtmf.len dtmf.end");
             termDigPattern.getSend().add(sendDigit);
 
             Send playTermSend = objectFactory.createSend();

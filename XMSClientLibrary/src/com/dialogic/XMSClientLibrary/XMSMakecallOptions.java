@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class XMSMakecallOptions {
 
-    boolean m_cpaEnabled;
+    public boolean m_cpaEnabled;
     XMSMediaType m_mediaType;
     boolean m_iceEnabled;
     public String m_sdp;
