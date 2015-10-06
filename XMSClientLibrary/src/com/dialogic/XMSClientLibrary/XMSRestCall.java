@@ -305,7 +305,6 @@ public class XMSRestCall extends XMSCall{
             }
                 else {
                 l_urlext = "calls/" + m_callIdentifier ;
-
                 RC = m_connector.SendCommand(this,RESTOPERATION.DELETE, l_urlext, null);
             }
             // Check if the delete call was OK.
@@ -630,20 +629,24 @@ public class XMSRestCall extends XMSCall{
         RC = m_connector.SendCommand(this,RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
         
          if (RC.get_scr_status_code() == 200){
-            setState(XMSCallState.CONNECTED);
+            //setState(XMSCallState.CONNECTED);
             //TODO: Should likely make a way to obtain the connection info 
                    
                    setConnectionAddress(RC.get_scr_source());
          //          setCalledAddress(RestGetCalledAddress(RC.get_scr_return_xml_payload()));
           if(!WaitcallOptions.m_autoConnectEnabled){ 
-                        
-                        XMSEvent l_callbackevt = new XMSEvent();
-                        //TODO: There should be the event contents in the last parm here
-                        l_callbackevt.CreateEvent(XMSEventType.CALL_CONNECTED, this, "", "", RC.toString()); 
-                        UnblockIfNeeded(l_callbackevt); 
-                    }
+              try {
+                  BlockIfNeeded(XMSEventType.CALL_CONNECTED);
+              } catch (InterruptedException ex) {
+                  System.out.println("Got the Exception");
+              }
+//            XMSEvent l_callbackevt = new XMSEvent();
+//            //TODO: There should be the event contents in the last parm here
+//            l_callbackevt.CreateEvent(XMSEventType.CALL_CONNECTED, this, "", "", RC.toString()); 
+//            UnblockIfNeeded(l_callbackevt); 
+          }
          
-                    return XMSReturnCode.SUCCESS;
+          return XMSReturnCode.SUCCESS;
 
         } else {
 
@@ -1298,8 +1301,8 @@ public class XMSRestCall extends XMSCall{
                        }
                     if(WaitcallOptions.m_autoConnectEnabled){
                         Answercall();
-                        l_callbackevt.CreateEvent(XMSEventType.CALL_CONNECTED, this, "", "", l_evt.toString());
-                        UnblockIfNeeded(l_callbackevt);
+                        //l_callbackevt.CreateEvent(XMSEventType.CALL_CONNECTED, this, "", "", l_evt.toString());
+                        //UnblockIfNeeded(l_callbackevt);
                     } else {
                         setState(XMSCallState.OFFERED);
                         l_callbackevt.CreateEvent(XMSEventType.CALL_OFFERED, this, "", "", l_evt.toString());
@@ -1330,6 +1333,29 @@ public class XMSRestCall extends XMSCall{
                     l_callbackevt.CreateEvent(XMSEventType.CALL_CONNECTED, this, "", l_callbackevt.getReason(), l_evt.toString()); // 30-Jul-2012 dsl
                     UnblockIfNeeded(l_callbackevt);
                     //end connected
+                }else if (l_evt.eventType.contentEquals("accepted")) {
+                    logger.info("Processing accepted event");
+                    setState(XMSCallState.ACCEPTED);
+                    
+                    EventData[] l_datalist=l_evt.event.getEventDataArray(); 
+                        for(EventDataDocument.EventData ed: l_datalist){
+                            if (ed.getName().contentEquals(EventDataName.REASON.toString())){   
+                                l_callbackevt.setReason(ed.getValue());                          
+                            } 
+                        }
+                    l_callbackevt.CreateEvent(XMSEventType.CALL_UPDATED, this, "", l_callbackevt.getReason(), l_evt.toString());           
+                }else if (l_evt.eventType.contentEquals("answered")) {
+                    logger.info("Processing answered event");
+                    setState(XMSCallState.CONNECTED);
+                    
+                    EventData[] l_datalist=l_evt.event.getEventDataArray();
+                        for(EventDataDocument.EventData ed: l_datalist){                        
+                            if (ed.getName().contentEquals(EventDataName.REASON.toString())){                         
+                                l_callbackevt.setReason(ed.getValue());                        
+                            } 
+                        }
+                    l_callbackevt.CreateEvent(XMSEventType.CALL_CONNECTED, this, "", l_callbackevt.getReason(), l_evt.toString());
+                    UnblockIfNeeded(l_callbackevt);
                 } else if (l_evt.eventType.contentEquals("hangup")) {
                     logger.info("Processing hangup event");
                     setState(XMSCallState.DISCONNECTED);
@@ -2070,6 +2096,7 @@ private String buildPlayRecordPayload(String a_playfile,String a_recfile) {
         } // end switch
 
         l_call.setAnswer(BooleanType.YES);
+        l_call.setAsyncCompletion(BooleanType.YES);
         // all that is supported for answer on message type is answer and media
         if(AnswercallOptions.m_mediatype != XMSMediaType.MESSAGE){
         //    logger.debug("RAW REST generated...."+l_WMS.toString());

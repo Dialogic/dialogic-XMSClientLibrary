@@ -385,13 +385,11 @@ public class xmsEventHandler implements Runnable {
                                         return;
                                     } 
                                     l_evt.event = event;
-                                    eventType       = event.getType().toString();
+                                    eventType = event.getType().toString();
                                     // Check to see if is just a keepalive
                                     if(eventType.contains("keepalive")){
-                                        
                                         logger.info("keepalive received");
-                                    } else {
-                                        
+                                    } else {                                        
                                         resourceId      = event.getResourceId();
                                         eventType       = event.getType().toString();
                                         resourceType    = event.getResourceType();
@@ -415,7 +413,19 @@ public class xmsEventHandler implements Runnable {
                                             } else {
                                                 logger.error("No calls in Waitcall state to process the incomming call");
                                             }
-                                        }else {
+                                        } else if(eventType.contains("accepted")){
+                                                logger.info("accepted event");
+                                                XMSCall l_call = (XMSCall)m_connector.m_activecallmap.get(resourceId);
+                                                System.out.println(m_connector.m_activecallmap.get(resourceId));
+                                                l_evt.call=l_call;
+                                                l_call.UpdateAndNotify(l_evt);
+                                        }else if(eventType.contains("answered")){
+                                                logger.info("answered event");
+                                                XMSCall l_call = (XMSCall)m_connector.m_activecallmap.get(resourceId);
+                                                System.out.println(m_connector.m_activecallmap.get(resourceId));
+                                                l_evt.call=l_call;
+                                                l_call.UpdateAndNotify(l_evt);
+                                        } else {
                                             //TODO Check this logic on what to do if getID is not present
                                             XMSObject l_tmp=m_connector.GetCallFromId(resourceId);
                                             if(l_tmp instanceof XMSCall){
