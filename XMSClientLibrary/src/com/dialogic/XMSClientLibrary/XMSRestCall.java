@@ -1138,6 +1138,9 @@ public class XMSRestCall extends XMSCall{
             setState(XMSCallState.COLLECTDIGITS);
                     try {
                         BlockIfNeeded(XMSEventType.CALL_COLLECTDIGITS_END);
+                        if(getState()!= XMSCallState.PLAYCOLLECT) {
+                            BlockIfNeeded(XMSEventType.CALL_PLAYCOLLECT_END);
+                        }
                     } catch (InterruptedException ex) {
                         logger.error("Exception:"+ex);
                     }
@@ -1451,6 +1454,22 @@ public class XMSRestCall extends XMSCall{
                         
                     }
                     l_callbackevt.CreateEvent(XMSEventType.CALL_DTMF, this, l_callbackevt.getData(), l_callbackevt.getReason(), l_evt.toString()); // 30-Jul-2012 dsl
+                    UnblockIfNeeded(l_callbackevt);
+                    //end dtmf                  
+                }else if (l_evt.eventType.contentEquals("end_playcollect") ) {
+                    logger.info("Processing end_playcollect event");
+                    setState(XMSCallState.PLAYCOLLECT);
+                    EventData[] l_datalist=l_evt.event.getEventDataArray();// 30-Jul-2012 dsl
+                    for(EventDataDocument.EventData ed: l_datalist){                            // 30-Jul-2012 dsl
+                        if (ed.getName().contentEquals(EventDataName.REASON.toString())){                              // 30-Jul-2012 dsl
+                            l_callbackevt.setReason(ed.getValue());                             // 30-Jul-2012 dsl
+                        } else if (ed.getName().contentEquals(EventDataName.DIGITS.toString())){                              // 30-Jul-2012 dsl
+                            l_callbackevt.setData(ed.getValue());                             // 30-Jul-2012 dsl
+                            logger.info("setting data content to "+l_callbackevt.getData());
+                        }
+                        
+                    }
+                    l_callbackevt.CreateEvent(XMSEventType.CALL_PLAYCOLLECT_END, this, l_callbackevt.getData(), l_callbackevt.getReason(), l_evt.toString()); // 30-Jul-2012 dsl
                     UnblockIfNeeded(l_callbackevt);
                     //end dtmf                  
                 }else if (l_evt.eventType.contentEquals("end_dtmf") ) { // added by sbp 18-Feb-2015 

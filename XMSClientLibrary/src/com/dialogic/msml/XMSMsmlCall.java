@@ -1222,7 +1222,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
         group.getPrimitive().add(objectFactory.createPlay(play));
 
         Collect collect = objectFactory.createCollect();
-        if (!CollectDigitsOptions.m_timeoutValue.equalsIgnoreCase("0s")) {
+        if (!PlayCollectOptions.m_timeoutValue.equalsIgnoreCase("0s")) {
             collect.setFdt(PlayCollectOptions.m_timeoutValue);
         }
         collect.setIdt("2s");
