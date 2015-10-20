@@ -80,7 +80,7 @@ public class XMSObjectFactory {
     public static void unblock() {
         synchronized (m_synclock) {
             selector.setVisible(false);
-            m_synclock.notifyAll();
+            m_synclock.notifyAll();            
         }
     }
 
@@ -146,7 +146,12 @@ public class XMSObjectFactory {
                 } else if (l_techtype.equals("MSML")) {
                     try {
                         // this is local address and port, do we need a config file for this?
-                        return new XMSMsmlConnector(a_ConfigFileName, Inet4Address.getLocalHost().getHostAddress(), 5070);
+                        String portNo = readFromXMLFile(a_ConfigFileName);
+                        if(portNo != null){
+                            return new XMSMsmlConnector(a_ConfigFileName, Inet4Address.getLocalHost().getHostAddress(), Integer.parseInt(portNo));
+                        } else {
+                           return new XMSMsmlConnector(a_ConfigFileName, Inet4Address.getLocalHost().getHostAddress(), 5070); 
+                        }
                     } catch (UnknownHostException ex) {
                         logger.fatal(ex.getMessage(), ex);
                     }
@@ -157,6 +162,24 @@ public class XMSObjectFactory {
         return null;
     }
 
+    private String readFromXMLFile(String fileName) {
+        String portNo = null;
+        try {
+            FileInputStream file = new FileInputStream(fileName);
+            Document doc = new Builder().build(file);
+            Element root = doc.getRootElement();
+            Elements entries = root.getChildElements();
+            for (int x = 0; x < entries.size(); x++) {
+                Element element = entries.get(x);
+                if (element.getLocalName().equals("port")) {
+                    portNo = element.getValue();
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Error reading XML file "+ex);
+        }
+        return portNo;
+    }
     /**
      * This is used to create a new XMSCallObject of the correct type.
      *

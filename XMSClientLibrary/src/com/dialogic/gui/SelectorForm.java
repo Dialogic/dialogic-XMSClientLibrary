@@ -6,7 +6,6 @@
 package com.dialogic.gui;
 
 import com.dialogic.XMSClientLibrary.XMSObjectFactory;
-import gov.nist.javax.sip.header.CSeq;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -16,27 +15,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.sip.address.Address;
-import javax.sip.header.CSeqHeader;
-import javax.sip.header.FromHeader;
-import javax.sip.header.ToHeader;
-import javax.sip.message.Request;
-import javax.sip.message.Response;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.DefaultCaret;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -48,7 +33,6 @@ import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
-import nu.xom.ParsingException;
 
 /**
  *
@@ -58,6 +42,7 @@ public class SelectorForm extends javax.swing.JFrame {
 
     static final Logger logger = Logger.getLogger(SelectorForm.class.getName());
     static FileInputStream xmlFile;
+    private String portNo;
 
     /**
      * Creates new form CallForm
@@ -108,12 +93,14 @@ public class SelectorForm extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         typeComboBox = new javax.swing.JComboBox();
         ipAddressTextField = new javax.swing.JTextField();
-        userTextField = new javax.swing.JTextField();
+        appIdTextField = new javax.swing.JTextField();
         clearButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
         techTypeLabel = new javax.swing.JLabel();
         xmsAddressLAbel = new javax.swing.JLabel();
         appIdLabel = new javax.swing.JLabel();
+        portTextField = new javax.swing.JTextField();
+        appIdLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         fileTextField = new javax.swing.JTextField();
         fileButton = new javax.swing.JButton();
@@ -133,7 +120,7 @@ public class SelectorForm extends javax.swing.JFrame {
             }
         });
 
-        userTextField.setText("app");
+        appIdTextField.setText("app");
 
         clearButton.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
         clearButton.setText("Clear");
@@ -166,6 +153,12 @@ public class SelectorForm extends javax.swing.JFrame {
         appIdLabel.setForeground(new java.awt.Color(0, 0, 204));
         appIdLabel.setText("App ID");
 
+        portTextField.setText("5070");
+
+        appIdLabel1.setFont(new java.awt.Font("Times New Roman", 0, 11)); // NOI18N
+        appIdLabel1.setForeground(new java.awt.Color(0, 0, 204));
+        appIdLabel1.setText("Port");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -173,17 +166,24 @@ public class SelectorForm extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(userTextField)
-                        .addComponent(ipAddressTextField, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(typeComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 191, Short.MAX_VALUE))
-                    .addComponent(xmsAddressLAbel, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(techTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(appIdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(clearButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(appIdTextField)
+                                .addComponent(ipAddressTextField, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(typeComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 191, Short.MAX_VALUE))
+                            .addComponent(xmsAddressLAbel, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(techTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(appIdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(clearButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(appIdLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 88, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -202,9 +202,13 @@ public class SelectorForm extends javax.swing.JFrame {
                 .addComponent(appIdLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(userTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(appIdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(saveButton))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(appIdLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(19, 19, 19))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Upload Config File", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Times New Roman", 1, 12), new java.awt.Color(0, 0, 153))); // NOI18N
@@ -284,8 +288,8 @@ public class SelectorForm extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(enterButton))
@@ -366,10 +370,11 @@ public class SelectorForm extends javax.swing.JFrame {
         } else {
             try {
                 if (typeComboBox.getSelectedItem() == "Type"
-                        || ipAddressTextField.getText().isEmpty() || userTextField.getText().isEmpty()
+                        || ipAddressTextField.getText().isEmpty() || appIdTextField.getText().isEmpty()
                         || ipAddressTextField.getText().equalsIgnoreCase("http://enter_ip_adr:81/default/")
-                        || ipAddressTextField.getText().contains("enter_ip_adr")) {
-                    JOptionPane.showMessageDialog(new JFrame(), "Please Choose a config file or enter valid address in the field", "Dialog",
+                        || ipAddressTextField.getText().contains("enter_ip_adr")
+                        || portTextField.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(new JFrame(), "Please Choose a config file or enter valid data in the fields", "Dialog",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -393,16 +398,18 @@ public class SelectorForm extends javax.swing.JFrame {
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
         typeComboBox.setSelectedItem("Type");
         ipAddressTextField.setText("");
-        userTextField.setText("");
+        appIdTextField.setText("");
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void typeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeComboBoxActionPerformed
         if (typeComboBox.getSelectedItem() == "REST") {
-            userTextField.setText("app");
+            appIdTextField.setText("app");
             ipAddressTextField.setText("http://enter_ip_adr:81/default/");
+            portTextField.setEnabled(false);
         } else if (typeComboBox.getSelectedItem() == "MSML") {
-            userTextField.setText("msml");
+            appIdTextField.setText("msml");
             ipAddressTextField.setText("");
+            portTextField.setEnabled(true);
         }
     }//GEN-LAST:event_typeComboBoxActionPerformed
 
@@ -440,13 +447,16 @@ public class SelectorForm extends javax.swing.JFrame {
             for (int x = 0; x < entries.size(); x++) {
                 Element element = entries.get(x);
                 if (element.getLocalName().equals("appid") || element.getLocalName().equals("user")) {
-                    userTextField.setText(element.getValue());
+                    appIdTextField.setText(element.getValue());
                 }
                 if (element.getLocalName().equals("baseurl") || element.getLocalName().equals("xmsAddress")) {
                     ipAddressTextField.setText(element.getValue());
                 }
                 if (element.getLocalName().equals("techtype")) {
                     typeComboBox.setSelectedItem(element.getValue());
+                }
+                if (element.getLocalName().equals("port")) {
+                    portTextField.setText(element.getValue());
                 }
             }
         } catch (Exception ex) {
@@ -474,8 +484,12 @@ public class SelectorForm extends javax.swing.JFrame {
             rootElement.appendChild(baseurl);
 
             org.w3c.dom.Element appid = doc.createElement("appid");
-            appid.appendChild(doc.createTextNode(userTextField.getText()));
+            appid.appendChild(doc.createTextNode(appIdTextField.getText()));
             rootElement.appendChild(appid);
+            
+            org.w3c.dom.Element port = doc.createElement("port");
+            port.appendChild(doc.createTextNode(portTextField.getText()));
+            rootElement.appendChild(port);
 
             source = new DOMSource(doc);
         } catch (Exception ex) {
@@ -486,6 +500,8 @@ public class SelectorForm extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel appIdLabel;
+    private javax.swing.JLabel appIdLabel1;
+    private javax.swing.JTextField appIdTextField;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton clearButton;
     private javax.swing.JButton enterButton;
@@ -494,10 +510,10 @@ public class SelectorForm extends javax.swing.JFrame {
     private javax.swing.JTextField ipAddressTextField;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JTextField portTextField;
     private javax.swing.JButton saveButton;
     private javax.swing.JLabel techTypeLabel;
     private javax.swing.JComboBox typeComboBox;
-    private javax.swing.JTextField userTextField;
     private javax.swing.JLabel xmsAddressLAbel;
     // End of variables declaration//GEN-END:variables
 }

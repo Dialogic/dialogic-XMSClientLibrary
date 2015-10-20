@@ -413,18 +413,6 @@ public class xmsEventHandler implements Runnable {
                                             } else {
                                                 logger.error("No calls in Waitcall state to process the incomming call");
                                             }
-                                        } else if(eventType.contains("accepted")){
-                                                logger.info("accepted event");
-                                                XMSCall l_call = (XMSCall)m_connector.m_activecallmap.get(resourceId);
-                                                System.out.println(m_connector.m_activecallmap.get(resourceId));
-                                                l_evt.call=l_call;
-                                                l_call.UpdateAndNotify(l_evt);
-                                        }else if(eventType.contains("answered")){
-                                                logger.info("answered event");
-                                                XMSCall l_call = (XMSCall)m_connector.m_activecallmap.get(resourceId);
-                                                System.out.println(m_connector.m_activecallmap.get(resourceId));
-                                                l_evt.call=l_call;
-                                                l_call.UpdateAndNotify(l_evt);
                                         } else {
                                             //TODO Check this logic on what to do if getID is not present
                                             XMSObject l_tmp=m_connector.GetCallFromId(resourceId);

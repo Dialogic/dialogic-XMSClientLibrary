@@ -401,7 +401,7 @@ public XMSReturnCode Initialize(String a_configfile){
                     */
                     //logger.info("WebSequence: "+a_call+" {{{XMS->App: "+a_RESTOPERATION + " STATUS LINE : " + m_httpresponseh.getStatusLine().toString()+" }}}" );
                    logger.info(a_RESTOPERATION + " STATUS LINE : " + m_httpresponseh.getStatusLine().toString());
-                  
+                  logger.info(a_RESTOPERATION + " response : " + m_httpresponseh);
                     break; // end PUT
 
                 case DELETE:
@@ -426,7 +426,7 @@ public XMSReturnCode Initialize(String a_configfile){
                     */
                     //logger.info("WebSequence: "+a_call+" {{{XMS->App: "+a_RESTOPERATION + " STATUS LINE : " + m_httpresponseh.getStatusLine().toString()+" }}}" );
                    logger.info(a_RESTOPERATION + " STATUS LINE : " + m_httpresponseh.getStatusLine().toString());
-
+                   
                     break; // end DELETE
 
         }// end switch
