@@ -262,11 +262,13 @@ public abstract class XMSObject extends Observable implements Observer{
         }else{
                 logger.info("Object is NOT blocked, posting senting event to EventDistributor");
                 m_connector.PostCallEvent(a_evt);
-            }
-            
-       
-        
+            }                           
     }
+    
+    protected void PostCallEvent(XMSEvent a_evt) {
+        m_connector.PostCallEvent(a_evt);
+    }
+    
     protected void DispatchXMSEvent(XMSEvent a_evt){
         FunctionLogger logger=new FunctionLogger("DispatchXMSEvent",this,m_logger);
         //TODO: We perhaps should have some event distribution thread rather then calling callback directly

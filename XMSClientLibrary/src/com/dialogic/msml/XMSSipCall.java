@@ -156,7 +156,7 @@ public class XMSSipCall extends Observable {
                             System.out.println("repeated request");
                             // request repeated do not create an event
                         } else {
-                            if (isACKOn200) {
+                            if (this.isACKOn200) {
                                 createAckRequest(response);
                             }
                             pendingCallList.add(this);
@@ -222,7 +222,7 @@ public class XMSSipCall extends Observable {
         HeaderFactory headerFactory = sipConnector.getHeaderFactory();
 
         try {
-            SipURI requestUri = addressFactory.createSipURI(toUserId, toAdr);            
+            SipURI requestUri = addressFactory.createSipURI(toUserId, toAdr);
             FromHeader fromHeader;
             if (this.getFromHeader(this.getFromAddress()) != null) {
                 fromHeader = this.getFromHeader(this.getFromAddress());
@@ -262,8 +262,8 @@ public class XMSSipCall extends Observable {
             MaxForwardsHeader maxForwardsHeader = headerFactory.createMaxForwardsHeader(70);
 
             Request request = null;
-            if(isCPA) {
-                String uri = requestUri.toString()+";cpa=yes";
+            if (isCPA) {
+                String uri = requestUri.toString() + ";cpa=yes";
                 URI reqUri = addressFactory.createURI(uri);
                 if (this.getLocalSdp() != null) {
                     request = sipConnector.getMessageFactory().createRequest(reqUri, Request.INVITE,
@@ -325,7 +325,7 @@ public class XMSSipCall extends Observable {
         try {
             if (this.getDialog() != null) {
                 ackRequest = this.getDialog().createAck(((CSeqHeader) response.getHeader(CSeqHeader.NAME)).getSeqNumber());
-                if (!isACKOn200 && this.getLocalSdp() == null) {
+                if (!this.isACKOn200 && this.getLocalSdp() == null) {
                     HeaderFactory headerFactory = sipConnector.getHeaderFactory();
                     ContentTypeHeader contTypeHeader = headerFactory.createContentTypeHeader("application", "sdp");
                     ackRequest.setContent(response.getRawContent(), contTypeHeader);
@@ -924,7 +924,7 @@ public class XMSSipCall extends Observable {
     }
 
     public void setACKOn200(boolean b) {
-        isACKOn200 = b;
+        this.isACKOn200 = b;
     }
 
     public void setOKOnInfo(boolean b) {
