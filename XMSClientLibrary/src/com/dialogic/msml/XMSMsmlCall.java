@@ -582,10 +582,32 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                     mediaControl = mediaControlMatcher.group(1);
                 }
                 if (getState() == XMSCallState.CUSTOM) {
-                    xmsEvent = new XMSEvent();
-                    xmsEvent.CreateEvent(XMSEventType.CALL_CUSTOM_INFO, this, "", "", info);
-                    setLastEvent(xmsEvent);
-                    UnblockIfNeeded(xmsEvent);
+                    Msml msml = unmarshalObject(new ByteArrayInputStream((byte[]) e.getReq().getRawContent()));
+                    Msml.Event event = msml.getEvent();
+                    String eventName = event.getName();
+                    if (eventName != null && eventName.equalsIgnoreCase("moml.exit") || eventName != null && eventName.equalsIgnoreCase("nomatch")
+                            || eventName != null && eventName.equalsIgnoreCase("dtmfexit")
+                            || eventName != null && eventName.equalsIgnoreCase("termkey")
+                            || eventName != null && eventName.equalsIgnoreCase("noinput")
+                            || eventName != null && eventName.equalsIgnoreCase("TermkeyRecieved")) {
+                        xmsEvent = new XMSEvent();
+                        List<JAXBElement<String>> eventNameValueList = event.getNameAndValue();
+                        xmsEvent.CreateEvent(XMSEventType.CALL_CUSTOM_INFO, this, eventNameValueList.get(1).getValue(),
+                                eventNameValueList.get(3).getValue(), info);
+                        setLastEvent(xmsEvent);
+                    } else if (eventName != null && eventName.equalsIgnoreCase("msml.dialog.exit")) {
+                        if (xmsEvent == null) {
+                            xmsEvent = new XMSEvent();
+                            xmsEvent.CreateEvent(XMSEventType.CALL_CUSTOM_INFO, this, event.getNameAndValue().get(1).getValue(),
+                                    event.getNameAndValue().get(3).getValue(), info);
+                            setLastEvent(xmsEvent);
+                        }
+                        UnblockIfNeeded(xmsEvent);
+                    } else {
+                        xmsEvent = new XMSEvent();
+                        xmsEvent.CreateEvent(XMSEventType.CALL_CUSTOM_INFO, this, "", "", info);
+                        UnblockIfNeeded(xmsEvent);
+                    }
                 } else if (mediaControl != null) {
                     if (e.getCall() == this.msmlSip) {
                         if (this.caller != null) {
@@ -631,8 +653,9 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                             events.put(eventNameValueList.get(i).getValue(),
                                     eventNameValueList.get(i + 1).getValue());
                         }
-                        if (dialogType != null) {
-                            if (xmsEvent != null && xmsEvent.getReason().equalsIgnoreCase("term-digit")) {
+                        if (dialogType != null) {                            
+                            if (xmsEvent != null && xmsEvent.getReason() != null 
+                                    && xmsEvent.getReason().equalsIgnoreCase("term-digit")) {
                                 // play collect, do nothing so that the last event contains the term-digit
                             } else {
                                 xmsEvent = new XMSEvent();
@@ -718,9 +741,6 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                                 setLastEvent(xmsEvent);
                                 UnblockIfNeeded(xmsEvent);
                             } else {
-                                if (xmsEvent.getCall() == null) {
-                                    xmsEvent.CreateEvent(this.getLastEvent().getEventType(), this, "", getState().toString(), "");
-                                }
                                 UnblockIfNeeded(xmsEvent);
                             }
                         } else {
