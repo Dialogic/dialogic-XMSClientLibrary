@@ -12,7 +12,7 @@ public class XMSConferenceOptions {
 
     public String m_MaxParties = "9";
     public XMSMediaType m_MediaType = XMSMediaType.VIDEO;
-    public Layout m_Layout = Layout.AUTO; //TODO need to change this to a Enum with meaningful values
+    public Layout m_Layout = Layout.AUTO; 
     public boolean m_CaptionEnabled = true;
     public String m_CaptionDuration = "20s";
     public boolean m_BeepEnabled = true;
@@ -20,6 +20,8 @@ public class XMSConferenceOptions {
     public boolean m_AGCEnabled = true;
     public boolean m_ECEnabled = true;
     boolean m_DestroyWhenEmpty = true;
+    public String m_active_talker_interval = "500ms";
+    public String m_active_talker_region = "";
    
     public XMSConferenceOptions() {
         Reset();
@@ -28,7 +30,7 @@ public class XMSConferenceOptions {
     public void Reset() {
         m_MaxParties = "9";
         m_MediaType = XMSMediaType.VIDEO;
-        m_Layout = Layout.AUTO; //TODO need to change this to a Enum with meaningful values
+        m_Layout = Layout.AUTO; 
         m_CaptionEnabled = true;
         String m_CaptionDuration = "20s";
         m_BeepEnabled = true;
@@ -36,6 +38,8 @@ public class XMSConferenceOptions {
         m_AGCEnabled = true;
         m_ECEnabled = true;
         m_DestroyWhenEmpty = true;
+        m_active_talker_interval = "500ms";
+        m_active_talker_region = "";
     }
 
     public void SetMaxParties(int a_maxparties) {
@@ -82,6 +86,14 @@ public class XMSConferenceOptions {
      public void EnableDestroyWhenEmpty(boolean a_isenabled){
          m_DestroyWhenEmpty=a_isenabled;
      }
+     
+     public void SetActiveTalkerInterval(String a_interval) {
+        m_active_talker_interval = a_interval;
+    }
+     
+     public void SetActiveTalkerRegion(String a_region) {
+        m_active_talker_region = a_region;
+    }
     @Override
     public String toString() {
         return "m_MaxParties=" + m_MaxParties
@@ -93,7 +105,9 @@ public class XMSConferenceOptions {
                 + " m_DigitClampingEnabled=" + m_DigitClampingEnabled
                 + " m_AGCEnabled=" + m_AGCEnabled
                 + " m_ECEnabled="+m_ECEnabled
-                + " m_DestroyWhenEmpty="+m_DestroyWhenEmpty;
+                + " m_DestroyWhenEmpty="+m_DestroyWhenEmpty
+                + " m_active_talker_interval="+m_active_talker_interval
+                + " m_active_talker_region="+m_active_talker_region;
     }
 
 }

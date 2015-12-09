@@ -380,6 +380,54 @@ public class XMSMsmlCall extends XMSCall implements Observer {
     }
 
     /**
+     * Join / Route 2 Calls together without transcoding.
+     *
+     * @param call
+     * @return SUCCESS if join completed, FAILURE if error
+     */
+//    public XMSReturnCode MsmlJoinNative(XMSCall call) {
+//        try {
+//            XMSMsmlCall c = (XMSMsmlCall) call;
+//            if (c != null && c.msmlSip != null && this.msmlSip != null) {
+//                boolean v = false;
+//                if (this.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO
+//                        && call.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO) {
+//                    v = true;
+//                }
+//                joinMap.put(this, c);
+//                joinMap.put(c, this);
+//                String msml;
+//                if (v) {
+//                    msml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+//                            + "<msml version=\"1.1\" xmlns:ns2=\"http://www.dialogic.com/DialogicTypes\">\n"
+//                            + "    <join id1=\"conn:" + this.msmlSip.getRemoteTag() + "\" id2=\"conn:" + c.msmlSip.getRemoteTag() + "\" mark=\"1\">\n"
+//                            + "        <stream media=\"audio\" compressed=\"true\"/>\n"
+//                            + "        <stream media=\"video\" compressed=\"true\"/>\n"
+//                            + "    </join>\n"
+//                            + "</msml>";
+//                } else {
+//                    msml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+//                            + "<msml version=\"1.1\" xmlns:ns2=\"http://www.dialogic.com/DialogicTypes\">\n"
+//                            + "    <join id1=\"conn:" + this.msmlSip.getRemoteTag() + "\" id2=\"conn:" + c.msmlSip.getRemoteTag() + "\" mark=\"1\">\n"
+//                            + "        <stream media=\"audio\" dir=\"from-id1\" compressed=\"true\"/>\n"
+//                            + "        <stream media=\"audio\" dir=\"to-id1\" compressed=\"true\"/>\n"
+//                            + "    </join>\n"
+//                            + "</msml>";
+//                }
+//                msmlSip.sendInfoWithoutConn(msml);
+//                setState(XMSCallState.JOINING);
+//                BlockIfNeeded(XMSEventType.CALL_INFO);
+//                if (this.getMediaStatusCode() == 200) {
+//                    return XMSReturnCode.SUCCESS;
+//                }
+//            }
+//        } catch (Exception ex) {
+//            logger.log(Level.SEVERE, ex.getMessage(), ex);
+//        }
+//        return XMSReturnCode.FAILURE;
+//    }
+
+    /**
      * Play prompt and Collect the DTMF Digit information
      *
      * @param filename - File to be played
@@ -653,8 +701,8 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                             events.put(eventNameValueList.get(i).getValue(),
                                     eventNameValueList.get(i + 1).getValue());
                         }
-                        if (dialogType != null) {                            
-                            if (xmsEvent != null && xmsEvent.getReason() != null 
+                        if (dialogType != null) {
+                            if (xmsEvent != null && xmsEvent.getReason() != null
                                     && xmsEvent.getReason().equalsIgnoreCase("term-digit")) {
                                 // play collect, do nothing so that the last event contains the term-digit
                             } else {

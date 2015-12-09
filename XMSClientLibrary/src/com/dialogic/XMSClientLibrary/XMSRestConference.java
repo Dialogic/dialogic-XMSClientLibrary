@@ -459,6 +459,12 @@ public class XMSRestConference extends XMSConference{
     
         l_conf.setLayout(Integer.toString(ConferenceOptions.m_Layout.getValue()));
         
+        l_conf.setActiveTalkerInterval(ConferenceOptions.m_active_talker_interval);
+        
+        if(!ConferenceOptions.m_active_talker_region.isEmpty()) {
+            l_conf.setActiveTalkerRegion(ConferenceOptions.m_active_talker_region);
+        }
+        
         if(ConferenceOptions.m_CaptionEnabled) {
             
             l_conf.setCaption(BooleanType.YES);

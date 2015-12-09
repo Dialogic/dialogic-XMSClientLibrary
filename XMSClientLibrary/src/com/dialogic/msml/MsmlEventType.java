@@ -13,6 +13,8 @@ public enum MsmlEventType {
 
     IDLE,
     INCOMING, // incoming call
+    INVITE, // outgoing call
+    TRYING, // send 100
     RINGING, // send 180
     CONNECTING, // send 200
     CONNECTED, // send ACK

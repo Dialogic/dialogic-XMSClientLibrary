@@ -494,7 +494,9 @@ public XMSReturnCode Initialize(String a_configfile){
                //TODO
                logger.error("Send Command failed!! DUMP XTRA INFO");
                 try {
-                        m_ReturnPayload = EntityUtils.toString(l_HttpEntity);
+                        if(l_HttpEntity != null) {
+                            m_ReturnPayload = EntityUtils.toString(l_HttpEntity);
+                        }
                     } catch (IOException ex) {
                         logger.error("EntityUtils.toString IOException: "+ ex);
                     } // end try

@@ -467,7 +467,7 @@ public class XMSMsmlConnector extends XMSConnector implements SipListener, Runna
 //                                logger.info("SEND OK FOR BYE");
 //                                logger.debug("SEND 200 OK for BYE REQUEST \n" + response);
 
-                                System.out.println(timeStamp() + "Received Bye, sending OK");
+                                System.out.println(timeStamp() + "Received Bye, sending OK" + response);
                                 st.sendResponse(response);
                                 activeCallMap.remove(call.getCallId());
                                 break;

@@ -176,6 +176,8 @@ public class XMSSipCall extends Observable {
                 }
                 break;
             case Response.TRYING:
+                MsmlEvent trying = createResponseEvent(response, MsmlEventType.TRYING);
+                setValue(trying);
                 break;
             case Response.RINGING:
                 MsmlEvent eve = createResponseEvent(response, MsmlEventType.RINGING);
@@ -308,6 +310,8 @@ public class XMSSipCall extends Observable {
             sipConnector.register(this);
             sipConnector.addToActiveMap(this.getCallId(), this);
             logger.info("CREATING AN INVITE REQUEST");
+            MsmlEvent invite = createRequestEvent(request, MsmlEventType.INVITE);
+            setValue(invite);
             sipConnector.sendRequest(request, this);
         } catch (Exception ex) {
             logger.fatal(ex.getMessage(), ex);

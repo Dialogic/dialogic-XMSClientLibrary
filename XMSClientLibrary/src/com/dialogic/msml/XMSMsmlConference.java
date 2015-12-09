@@ -9,35 +9,34 @@ import com.dialogic.XMSClientLibrary.Layout;
 import com.dialogic.XMSClientLibrary.XMSCall;
 import com.dialogic.XMSClientLibrary.XMSCallState;
 import com.dialogic.XMSClientLibrary.XMSConference;
-import com.dialogic.XMSClientLibrary.XMSConferenceOptions;
 import com.dialogic.XMSClientLibrary.XMSConnector;
 import com.dialogic.XMSClientLibrary.XMSEvent;
 import com.dialogic.XMSClientLibrary.XMSEventType;
 import com.dialogic.XMSClientLibrary.XMSMediaType;
 import com.dialogic.XMSClientLibrary.XMSReturnCode;
-import com.dialogic.xms.msml.AudioMixType;
-import com.dialogic.xms.msml.BasicAudioMixType;
 import com.dialogic.xms.msml.BooleanDatatype;
+import com.dialogic.xms.msml.DialogLanguageDatatype;
+import com.dialogic.xms.msml.ExitType;
 import com.dialogic.xms.msml.Msml;
 import com.dialogic.xms.msml.ObjectFactory;
+import com.dialogic.xms.msml.Play;
 import com.dialogic.xms.msml.RootType;
 import com.dialogic.xms.msml.StreamType;
 import com.dialogic.xms.msml.VideoLayoutType;
 import com.dialogic.xms.msml.VideoLayoutType.Region;
-import static com.dialogic.msml.XMSMsmlCall.logger;
-import static com.dialogic.msml.XMSMsmlCall.objectFactory;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.net.Inet4Address;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -57,6 +56,7 @@ public class XMSMsmlConference extends XMSConference implements Observer {
     private static Logger m_logger = Logger.getLogger(XMSMsmlConference.class.getName());
 
     private XMSMsmlConnector connector;
+    private int mediaStatusCode;
     XMSSipCall conf;
     static int counter = 0;
     static XMSCallState m_state = XMSCallState.NULL;
@@ -64,6 +64,7 @@ public class XMSMsmlConference extends XMSConference implements Observer {
     static int mark = 1;
     static int display = 1;
     String filename;
+    XMSEvent xmsEvent;
 
     public XMSMsmlConference() {
         m_type = "MSML";
@@ -159,28 +160,55 @@ public class XMSMsmlConference extends XMSConference implements Observer {
             if (e.getRes().getRawContent() != null) {
                 Msml msml = unmarshalObject(new ByteArrayInputStream((byte[]) e.getRes().getRawContent()));
                 Msml.Result result = msml.getResult();
+                this.setMediaStatusCode(Integer.parseInt(result.getResponse()));
                 if (result.getResponse().equalsIgnoreCase("200")) {
                     System.out.println("Response received" + result.getResponse());
                     XMSEvent xmsEvent = new XMSEvent();
                     xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, result.getResponse(), "", reponseMessage);
                     setLastEvent(xmsEvent);
                     UnblockIfNeeded(xmsEvent);
-                } else if (result.getResponse().equalsIgnoreCase("400")) {
-                    System.out.println("Response 400 received");
+                } else {
+                    System.out.println("Response received" + result.getResponse());
+                    XMSEvent xmsEvent = new XMSEvent();
+                    xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, result.getResponse(), "", reponseMessage);
+                    setLastEvent(xmsEvent);
+                    UnblockIfNeeded(xmsEvent);
                 }
             }
         } else if (e.getType().equals(MsmlEventType.INFOREQUEST)) {
-            String info = new String(e.getReq().getRawContent());
+            conf.createInfoResponse(e.getReq());
+            if (e.getReq().getRawContent() != null) {
+                String info = new String(e.getReq().getRawContent());
 
-            Msml msml = unmarshalObject(new ByteArrayInputStream((byte[]) e.getReq().getRawContent()));
-            Msml.Event event = msml.getEvent();
-            String eventName = event.getName();
-            if (eventName != null && eventName.equalsIgnoreCase("msml.conf.nomedia")) {
-                conf.sendInfo(buildDestroyConfMsml(m_Name));
-                conf.createBye();
-                XMSEvent xmsEvent = new XMSEvent();
-                xmsEvent.CreateEvent(XMSEventType.CALL_DISCONNECTED, this, "", "", info);
-                setLastEvent(xmsEvent);
+                Msml msml = unmarshalObject(new ByteArrayInputStream((byte[]) e.getReq().getRawContent()));
+                Msml.Event event = msml.getEvent();
+                String eventName = event.getName();
+                if (eventName != null && eventName.equalsIgnoreCase("msml.conf.nomedia")) {
+                    conf.sendInfo(buildDestroyConfMsml(m_Name));
+                    conf.createBye();
+                    XMSEvent xmsEvent = new XMSEvent();
+                    xmsEvent.CreateEvent(XMSEventType.CALL_DISCONNECTED, this, "", "", info);
+                    setLastEvent(xmsEvent);
+                } else if (eventName != null && eventName.equalsIgnoreCase("moml.exit")) {
+                    List<JAXBElement<String>> eventNameValueList = event.getNameAndValue();
+                    Map<String, String> events = new HashMap<>();
+                    for (int i = 0, n = eventNameValueList.size(); i < n; i += 2) {
+                        System.out.println("[i] -> " + eventNameValueList.get(i).getValue());
+                        System.out.println("[i+1] -> " + eventNameValueList.get(i + 1).getValue());
+
+                        events.put(eventNameValueList.get(i).getValue(),
+                                eventNameValueList.get(i + 1).getValue());
+
+                        String amt = events.get("play.amt");
+                        String playReason = events.get("play.end");
+                        xmsEvent = new XMSEvent();
+                        xmsEvent.CreateEvent(XMSEventType.CALL_PLAY_END, this, amt, playReason, info);
+                        xmsEvent.setReason(playReason);
+                        setLastEvent(xmsEvent);
+                    }
+                } else if (eventName != null && eventName.equalsIgnoreCase("msml.dialog.exit")) {
+                    UnblockIfNeeded(xmsEvent);
+                }
             }
 
         } else if (e.getType().equals(MsmlEventType.DISCONNECTED)) {
@@ -192,6 +220,22 @@ public class XMSMsmlConference extends XMSConference implements Observer {
                 conf.createBye();
             }
         }
+    }
+
+    @Override
+    public XMSReturnCode Play(String a_file) {
+        try {
+            conf.sendInfo(buildConfPlayMsml(m_Name, a_file));
+            BlockIfNeeded(XMSEventType.CALL_INFO);
+            if (this.getMediaStatusCode() == 200) {
+                BlockIfNeeded(XMSEventType.CALL_PLAY_END);
+            } else {
+                return XMSReturnCode.FAILURE;
+            }
+        } catch (InterruptedException ex) {
+            java.util.logging.Logger.getLogger(XMSMsmlConference.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return XMSReturnCode.SUCCESS;
     }
 
     private void setXMSInfo(XMSSipCall c) {
@@ -409,6 +453,56 @@ public class XMSMsmlConference extends XMSConference implements Observer {
         return sw.toString();
     }
 
+    /**
+     * Builds MSML play script
+     *
+     * @param fileName - File to be played.
+     * @return MSML script.
+     */
+    private String buildConfPlayMsml(String confName, String fileName) {
+        java.io.StringWriter sw = new StringWriter();
+
+        Msml msml = objectFactory.createMsml();
+        msml.setVersion("1.1");
+
+        Msml.Dialogstart dialogstart = objectFactory.createMsmlDialogstart();
+        dialogstart.setTarget("conf:" + confName);
+        dialogstart.setType(DialogLanguageDatatype.APPLICATION_MOML_XML);
+        dialogstart.setName("Play");
+
+        Play play = objectFactory.createPlay();
+        play.setBarge(BooleanDatatype.FALSE);
+
+        Play.Audio audio = objectFactory.createPlayAudio();
+        if (fileName.contains(".wav")) {
+            audio.setUri("file://" + fileName);
+        } else {
+            audio.setUri("file://" + fileName + ".wav");
+        }
+
+        Play.Playexit playexit = objectFactory.createPlayPlayexit();
+        ExitType exitType = new ExitType();
+        exitType.setNamelist("play.end play.amt");
+        playexit.setExit(exitType);
+        play.setPlayexit(playexit);
+
+        play.getAudioOrVideoOrMedia().add(objectFactory.createPlayAudio(audio));
+
+        dialogstart.getMomlRequest().add(objectFactory.createPlay(play));
+        msml.getMsmlRequest().add(dialogstart);
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(Msml.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            jaxbMarshaller.marshal(msml, sw);
+
+        } catch (JAXBException ex) {
+            m_logger.error(ex.getMessage(), ex);
+        }
+        return sw.toString();
+    }
+
     public VideoLayoutType getLayout(int num) {
         if (num > 0) {
             VideoLayoutType videoLayout = objectFactory.createVideoLayoutType();
@@ -515,5 +609,19 @@ public class XMSMsmlConference extends XMSConference implements Observer {
             e.printStackTrace();
         }
         return msml;
+    }
+
+    /**
+     * @return the mediaStatusCode
+     */
+    public int getMediaStatusCode() {
+        return this.mediaStatusCode;
+    }
+
+    /**
+     * @param mediaStatusCode the mediaStatusCode to set
+     */
+    public void setMediaStatusCode(int mediaStatusCode) {
+        this.mediaStatusCode = mediaStatusCode;
     }
 }

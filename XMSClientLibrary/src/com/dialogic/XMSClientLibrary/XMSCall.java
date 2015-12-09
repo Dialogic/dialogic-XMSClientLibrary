@@ -328,4 +328,14 @@ public abstract class XMSCall extends XMSObject{
      public XMSReturnCode SendInfo(String a_message){
          return XMSReturnCode.NOT_IMPLEMENTED;
      }
+     
+     /**
+     * Join / Route 2 Calls together
+     *
+     * @param a_othercall
+     * @return
+     */
+    public XMSReturnCode MsmlJoinNative(XMSCall a_othercall) {
+        return XMSReturnCode.NOT_IMPLEMENTED;
+    }
 }
