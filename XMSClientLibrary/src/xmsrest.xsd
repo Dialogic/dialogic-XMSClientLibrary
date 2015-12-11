@@ -29,6 +29,7 @@
 			<xs:enumeration value="video" />
 			<xs:enumeration value="audiovideo" />
 			<xs:enumeration value="message" />
+			<xs:enumeration value="image" />
 			<xs:enumeration value="unknown" />
 		</xs:restriction>
 	</xs:simpleType>
@@ -50,6 +51,7 @@
 			<xs:enumeration value="alaw" />
 			<xs:enumeration value="AMR" />
 			<xs:enumeration value="AMR-WB" />
+			<xs:enumeration value="OPUS" />
 		</xs:restriction>
 	</xs:simpleType>
 	
@@ -68,6 +70,8 @@
 			<xs:enumeration value="h263-1998" />
 			<xs:enumeration value="mp4v-es" />
 			<xs:enumeration value="jpeg" />
+			<xs:enumeration value="vp8" />
+			<xs:enumeration value="vp9" />
 		</xs:restriction>
 	</xs:simpleType>
 	
@@ -76,6 +80,8 @@
 			<xs:enumeration value="video/x-vid" />
 			<xs:enumeration value="video/3gpp" />
 			<xs:enumeration value="image/jpeg" />
+			<xs:enumeration value="video/mp4" />
+			<xs:enumeration value="video/mkv" />
 		</xs:restriction>
 	</xs:simpleType>
 	
@@ -90,6 +96,8 @@
 			<xs:enumeration value="audio/AMR" />
 			<xs:enumeration value="audio/AMR-WB" />
 			<xs:enumeration value="audio/3gpp" />
+			<xs:enumeration value="audio/mp4" />
+			<xs:enumeration value="audio/mkv" />
 			<xs:enumeration value="text/uri-list" />
 		</xs:restriction>
 	</xs:simpleType>
@@ -99,6 +107,8 @@
 			<xs:enumeration value="video/x-vid" />
 			<xs:enumeration value="video/3gpp" />
 			<xs:enumeration value="image/jpeg" />
+			<xs:enumeration value="video/mp4" />
+			<xs:enumeration value="video/mkv" />
 		</xs:restriction>
 	</xs:simpleType>
 	
@@ -144,7 +154,7 @@
 	
 	<xs:simpleType name="rfc2833_digit_value">
 		<xs:restriction base="xs:string">
-			<xs:pattern value="[0-9#*a-dA-D]+|"/>
+			<xs:pattern value="[0-9#$*a-dA-D]+|"/>
 		</xs:restriction>
 	</xs:simpleType>
 	
@@ -187,6 +197,8 @@
 		</xs:restriction>
 	</xs:simpleType>
 	
+	
+	
 	<xs:simpleType name="event_type">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="end_play" />
@@ -218,6 +230,12 @@
 			<xs:enumeration value="end_send_message" />
 			<xs:enumeration value="stream" />
 			<xs:enumeration value="speech_marker" />
+			<xs:enumeration value="start_play" />
+			<xs:enumeration value="end_event" />
+			<xs:enumeration value="progress" />
+			<xs:enumeration value="prack_ack" />
+			<xs:enumeration value="status" />
+			<xs:enumeration value="info_ack" />
 		</xs:restriction>
 	</xs:simpleType>
 	
@@ -312,6 +330,8 @@
 		</xs:complexType>
 	</xs:element>
 	
+	
+	
 	<xs:element name="msg_payload">
 		<xs:complexType>
 				<xs:choice>
@@ -383,7 +403,12 @@
 				<xs:element ref="get-asr-param" />
 				<xs:element ref="set-tts-param" />
 				<xs:element ref="get-tts-param" />
-				<xs:element ref="define-grammar" />			
+				<xs:element ref="define-grammar" />	
+				<xs:element ref="send_event" />
+				<xs:element ref="dial" />
+				<xs:element ref="send_prack" />
+				<xs:element ref="send_prack_ack" />
+				<xs:element ref="send_answer_ack" />
 			</xs:choice>
 		</xs:complexType>
 	</xs:element>
@@ -445,12 +470,15 @@
 				<xs:attribute name="video" type="media_direction" default="sendrecv"/>
 				<xs:attribute name="audio_transcode" type="boolean_type" default="yes"/>
 				<xs:attribute name="video_transcode" type="boolean_type" default="yes"/>
+				<xs:attribute name="media_path_optimize" type="boolean_type" default="no"/>
 		</xs:complexType>
 	</xs:element>
 	
 	<xs:element name="unjoin">
 		<xs:complexType>
 				<xs:attribute name="call_id" type="xs:string" />
+				<xs:attribute name="audio" type="media_direction" default="sendrecv"/>
+				<xs:attribute name="video" type="media_direction" default="sendrecv"/>
 		</xs:complexType>
 	</xs:element>
 	
@@ -475,10 +503,42 @@
 		</xs:complexType>
 	</xs:element>
 	
+	<xs:element name="dial">
+		<xs:complexType>
+				<xs:all minOccurs="0">
+					<xs:element ref="sip_headers" />
+				</xs:all>
+				<xs:attribute name="uri" type="xs:string" use="required"/>
+				<xs:attribute name="called_uri" type="xs:string" />
+				<xs:attribute name="caller_uri" type="xs:string" />
+				<xs:attribute name="caller_display_name" type="xs:string" />
+				<xs:attribute name="cpa" type="boolean_type" />
+				<xs:attribute name="timeout" type="time_value"/>
+				<xs:attribute name="content_type" type="xs:string" />
+				<xs:attribute name="content" type="xs:string" />
+				<xs:attribute name="answer_ack_mode"  type="ack_mode_option" />
+				<xs:attribute name="prack_mode"  type="ack_mode_option" />
+				<xs:attribute name="prack_level">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="supported"/>
+							<xs:enumeration value="required"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	
+	
+	
 	<xs:element name="send_info">
 		<xs:complexType>
-				<xs:attribute name="content_type" type="xs:string" use="required"/>
-				<xs:attribute name="content" type="xs:string" use="required"/>
+				<xs:sequence>
+					<xs:element ref="content_element" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attribute name="content_type" type="xs:string" />
+				<xs:attribute name="content" type="xs:string"/>
+				<xs:attribute name="enable_info_ack" type="boolean_type" default="no"/>
 		</xs:complexType>
 	</xs:element>
 	
@@ -513,6 +573,8 @@
 				<xs:attribute name="caller_uri" type="xs:string" />
 				<xs:attribute name="called_uri" type="xs:string" />
 				<xs:attribute name="application_id" type="xs:string" />
+				<xs:attribute name="local_seqno" type="xs:string" />
+				<xs:attribute name="remote_seqno" type="xs:string" />
 		</xs:complexType>
 	</xs:element>
 	
@@ -530,8 +592,9 @@
 					<xs:choice minOccurs="0" maxOccurs="unbounded">
 							<xs:element ref="content_element" />
 							<xs:element ref="msg_payload" />
+							<xs:element ref="sip_headers" minOccurs="0" maxOccurs="1" />
 					</xs:choice>
-				</xs:sequence>				
+				</xs:sequence>			
 				<xs:attribute name="caller_uri" type="xs:string" />
 				<xs:attribute name="called_uri" type="xs:string" />
 				<xs:attribute name="uri" type="xs:string" />
@@ -556,18 +619,45 @@
 					</xs:simpleType>
 				</xs:attribute>
 				<xs:attribute name="msg_multipart_type" type="xs:string" />			
-				<xs:attribute name="headers" type="xs:string" />			
 				<xs:attribute name="transaction_id" type="xs:string" />	
 		</xs:complexType>
 	</xs:element>
 	
 	<xs:element name="send_info_ack">
 		<xs:complexType>
+				<xs:sequence>
+					<xs:element ref="content_element" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
 				<xs:attribute name="content_type" type="xs:string" />
 				<xs:attribute name="content" type="xs:string" />
 		</xs:complexType>
 	</xs:element>
-			
+	
+	
+	
+	<xs:element name="send_event">
+		<xs:complexType>
+				<xs:attribute name="events" type="rfc2833_digit_value" use="required"/>
+				<xs:attribute name="duration" type="time_value" default="100ms"/>
+				<xs:attribute name="interval" type="time_value" default="100ms"/>
+				<xs:attribute name="level" type="dtmf_tone_range" default="-10dB"/>
+				<xs:attribute name="transaction_id" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="send_prack">
+		<xs:complexType>
+		</xs:complexType>
+	</xs:element>	
+	<xs:element name="send_prack_ack">
+		<xs:complexType>
+		</xs:complexType>
+	</xs:element>	
+	<xs:element name="send_answer_ack">
+		<xs:complexType>
+		</xs:complexType>
+	</xs:element>	
+	
 	<xs:element name="call_action">
 		<xs:complexType>
 			<xs:choice minOccurs="1" maxOccurs="1">
@@ -594,7 +684,12 @@
 				<xs:element ref="send_message" />
 				<xs:element ref="send_hangup_ack" />
 				<xs:element ref="get_last_action" />
-				<xs:element ref="get_last_event" />					
+				<xs:element ref="get_last_event" />		
+				<xs:element ref="send_event" />
+				<xs:element ref="dial" />
+				<xs:element ref="send_prack" />
+				<xs:element ref="send_prack_ack" />
+				<xs:element ref="send_answer_ack" />
 			</xs:choice>
 		</xs:complexType>
 	</xs:element>
@@ -608,6 +703,10 @@
 				<xs:element ref="stop" />
 				<xs:element ref="get_last_action" />
 				<xs:element ref="get_last_event" />	
+				<xs:element ref="send_dtmf" />
+				<xs:element ref="playcollect" />
+				<xs:element ref="playrecord" />
+				<xs:element ref="send_event" />
 			</xs:choice>
 		</xs:complexType>
 	</xs:element>
@@ -713,6 +812,14 @@
 		<xs:complexType>
 			<xs:attribute name="uri" type="xs:string" use="required"/>
 			<xs:attribute name="duration" type="time_value" default="infinite" />
+			<xs:attribute name="direction"  default="send">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="send"/>
+						<xs:enumeration value="recv"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>		
 			<xs:attribute name="transaction_id" type="xs:string" />
 		</xs:complexType>
 	</xs:element>
@@ -754,11 +861,15 @@
 	<xs:element name="play_source">
 		<xs:complexType>
 			<xs:attribute name="location" type="xs:string" />
+			<!-- Will be deprecated after xms 3.0  xs:attribute name="base_audio_uri" type="xs:string" using xs:attribute name="audio_base_uri" type="xs:string" instead/-->
 			<xs:attribute name="base_audio_uri" type="xs:string" />
+			<xs:attribute name="audio_base_uri" type="xs:string" />
 			<xs:attribute name="audio_uri" type="xs:string" />
 			<xs:attribute name="audio_type" type="audio_type_option" />
 			<xs:attribute name="audio_rate" type="audio_rate_option" />
+			<!-- Will be deprecated after xms 3.0  xs:attribute name="base_video_uri" type="xs:string" using xs:attribute name="video_base_uri" type="xs:string" instead/-->
 			<xs:attribute name="base_video_uri" type="xs:string" />
+			<xs:attribute name="video_base_uri" type="xs:string" />
 			<xs:attribute name="video_uri" type="xs:string" />
 			<xs:attribute name="video_type" type="video_type_option" />
 		</xs:complexType>
@@ -875,8 +986,12 @@
 	<xs:element name="call">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="call_action" minOccurs="0" maxOccurs="1" />
+				<xs:choice minOccurs="0" maxOccurs="unbounded">
+					<xs:element ref="call_action" minOccurs="0" maxOccurs="1" />
+					<xs:element ref="sip_headers" minOccurs="0" maxOccurs="1" />
+				</xs:choice>
 			</xs:sequence>
+			
             <xs:attribute name="answer" type="boolean_type"/> 
 			<xs:attribute name="signaling" type="boolean_type" default="yes" /> 
 			<xs:attribute name="media" type="media_type" />
@@ -898,6 +1013,7 @@
 			<xs:attribute name="audio" type="media_direction" />
 			<xs:attribute name="video" type="media_direction" />
 			<xs:attribute name="message" type="media_direction" />
+			<xs:attribute name="image" type="media_direction" />
 			<xs:attribute name="accept" type="boolean_type" />
 			<xs:attribute name="async_completion" type="boolean_type" />
 			<xs:attribute name="dial_timeout" type="time_value"/>
@@ -914,14 +1030,28 @@
 			<xs:attribute name="content" type="xs:string" />
 			<xs:attribute name="content_type" type="xs:string" />
 			<xs:attribute name="local_rtp_address" type="xs:string" />
-			<xs:attribute name="headers" type="xs:string" />
+			<xs:attribute name="answer_ack_mode"  type="ack_mode_option" />
+			<xs:attribute name="prack_mode"  type="ack_mode_option" />
+			<xs:attribute name="prack_ack_mode"  type="ack_mode_option" />
+			<xs:attribute name="prack_level">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="none"/>
+						<xs:enumeration value="required"/>
+						<xs:enumeration value="supported"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 
 	<xs:element name="call_response">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element ref="call_action" minOccurs="0" />
+				<xs:choice minOccurs="0" maxOccurs="unbounded">
+					<xs:element ref="call_action" minOccurs="0" maxOccurs="1" />
+					<xs:element ref="sip_headers" minOccurs="0" maxOccurs="1" />
+				</xs:choice>
 			</xs:sequence>
 			<xs:attribute name="signaling" type="boolean_type" />
 			<xs:attribute name="media" type="media_type" />
@@ -945,6 +1075,7 @@
 			<xs:attribute name="audio" type="media_direction" />
 			<xs:attribute name="video" type="media_direction" />
 			<xs:attribute name="message" type="media_direction" />
+			<xs:attribute name="image" type="media_direction" />
 			<xs:attribute name="async_completion" type="boolean_type" />
 			<xs:attribute name="encryption" type="rtp_encryption_option" />
 			<xs:attribute name="ice" type="boolean_type"/>
@@ -960,7 +1091,18 @@
 			<xs:attribute name="content_type" type="xs:string" />
 			<xs:attributeGroup ref="response_attrgroup" />
 			<xs:attribute name="local_rtp_address" type="xs:string" />
-			<xs:attribute name="headers" type="xs:string" />
+			<xs:attribute name="answer_ack_mode"  type="ack_mode_option" />
+			<xs:attribute name="prack_mode"  type="ack_mode_option" />
+			<xs:attribute name="prack_ack_mode"  type="ack_mode_option" />
+			<xs:attribute name="prack_level">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="none"/>
+						<xs:enumeration value="required"/>
+						<xs:enumeration value="supported"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 

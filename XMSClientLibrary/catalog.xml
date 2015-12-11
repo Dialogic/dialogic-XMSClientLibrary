@@ -2,4 +2,6 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
     <system systemId="file:/C:/Users/ssatyana/Documents/NetBeansProjects/dialogic-rest-java/XMSClientLibrary/msml.xsd" uri="xml-resources/jaxb/XMSMsml/msml.xsd"/>
     <system systemId="file:/C:/Users/ssatyana/Documents/NetBeansProjects/dialogic-rest-java/XMSClientLibrary/msml-dialogic-datatypes.xsd" uri="xml-resources/jaxb/XMSMsml/msml-dialogic-datatypes.xsd"/>
+    <system systemId="file:/C:/Users/ssatyana/Documents/NetBeansProjects/dialogic-XMSClientLibrary/XMSClientLibrary/msml.xsd" uri="xml-resources/jaxb/XMSMsml/msml.xsd"/>
+    <system systemId="file:/C:/Users/ssatyana/Documents/NetBeansProjects/dialogic-XMSClientLibrary/XMSClientLibrary/msml-dialogic-datatypes.xsd" uri="xml-resources/jaxb/XMSMsml/msml-dialogic-datatypes.xsd"/>
 </catalog>
