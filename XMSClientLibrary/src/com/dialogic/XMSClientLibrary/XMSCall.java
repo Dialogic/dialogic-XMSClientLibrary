@@ -46,6 +46,7 @@ public abstract class XMSCall extends XMSObject{
      public XMSPlayPhraseOptions PlayPhraseOptions = new XMSPlayPhraseOptions();
      public XMSSendMessageOptions SendMessageOptions = new XMSSendMessageOptions();
      public XMSSendInfoOptions SendInfoOptions = new XMSSendInfoOptions();
+     public XMSJoincallOptions JoincallOptions = new XMSJoincallOptions();
      /**
       * CTor for the Object.  Default takes no parms
       */
@@ -328,14 +329,5 @@ public abstract class XMSCall extends XMSObject{
      public XMSReturnCode SendInfo(String a_message){
          return XMSReturnCode.NOT_IMPLEMENTED;
      }
-     
-     /**
-     * Join / Route 2 Calls together
-     *
-     * @param a_othercall
-     * @return
-     */
-    public XMSReturnCode MsmlJoinNative(XMSCall a_othercall) {
-        return XMSReturnCode.NOT_IMPLEMENTED;
-    }
+    
 }

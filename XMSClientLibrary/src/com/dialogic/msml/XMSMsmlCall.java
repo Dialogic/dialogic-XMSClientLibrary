@@ -357,20 +357,24 @@ public class XMSMsmlCall extends XMSCall implements Observer {
     @Override
     public XMSReturnCode Join(XMSCall call) {
         try {
-            XMSMsmlCall c = (XMSMsmlCall) call;
-            if (c != null && c.msmlSip != null && this.msmlSip != null) {
-                boolean v = false;
-                if (this.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO
-                        && call.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO) {
-                    v = true;
-                }
-                joinMap.put(this, c);
-                joinMap.put(c, this);
-                msmlSip.sendInfoWithoutConn(buildJoinMsml(this.msmlSip, c.msmlSip, v));
-                setState(XMSCallState.JOINING);
-                BlockIfNeeded(XMSEventType.CALL_INFO);
-                if (this.getMediaStatusCode() == 200) {
-                    return XMSReturnCode.SUCCESS;
+            if (JoincallOptions.m_native) {
+                MsmlJoinNative(call);
+            } else {
+                XMSMsmlCall c = (XMSMsmlCall) call;
+                if (c != null && c.msmlSip != null && this.msmlSip != null) {
+                    boolean v = false;
+                    if (this.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO
+                            && call.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO) {
+                        v = true;
+                    }
+                    joinMap.put(this, c);
+                    joinMap.put(c, this);
+                    msmlSip.sendInfoWithoutConn(buildJoinMsml(this.msmlSip, c.msmlSip, v));
+                    setState(XMSCallState.JOINING);
+                    BlockIfNeeded(XMSEventType.CALL_INFO);
+                    if (this.getMediaStatusCode() == 200) {
+                        return XMSReturnCode.SUCCESS;
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -385,47 +389,47 @@ public class XMSMsmlCall extends XMSCall implements Observer {
      * @param call
      * @return SUCCESS if join completed, FAILURE if error
      */
-//    public XMSReturnCode MsmlJoinNative(XMSCall call) {
-//        try {
-//            XMSMsmlCall c = (XMSMsmlCall) call;
-//            if (c != null && c.msmlSip != null && this.msmlSip != null) {
-//                boolean v = false;
-//                if (this.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO
-//                        && call.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO) {
-//                    v = true;
-//                }
-//                joinMap.put(this, c);
-//                joinMap.put(c, this);
-//                String msml;
-//                if (v) {
-//                    msml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-//                            + "<msml version=\"1.1\" xmlns:ns2=\"http://www.dialogic.com/DialogicTypes\">\n"
-//                            + "    <join id1=\"conn:" + this.msmlSip.getRemoteTag() + "\" id2=\"conn:" + c.msmlSip.getRemoteTag() + "\" mark=\"1\">\n"
-//                            + "        <stream media=\"audio\" compressed=\"true\"/>\n"
-//                            + "        <stream media=\"video\" compressed=\"true\"/>\n"
-//                            + "    </join>\n"
-//                            + "</msml>";
-//                } else {
-//                    msml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-//                            + "<msml version=\"1.1\" xmlns:ns2=\"http://www.dialogic.com/DialogicTypes\">\n"
-//                            + "    <join id1=\"conn:" + this.msmlSip.getRemoteTag() + "\" id2=\"conn:" + c.msmlSip.getRemoteTag() + "\" mark=\"1\">\n"
-//                            + "        <stream media=\"audio\" dir=\"from-id1\" compressed=\"true\"/>\n"
-//                            + "        <stream media=\"audio\" dir=\"to-id1\" compressed=\"true\"/>\n"
-//                            + "    </join>\n"
-//                            + "</msml>";
-//                }
-//                msmlSip.sendInfoWithoutConn(msml);
-//                setState(XMSCallState.JOINING);
-//                BlockIfNeeded(XMSEventType.CALL_INFO);
-//                if (this.getMediaStatusCode() == 200) {
-//                    return XMSReturnCode.SUCCESS;
-//                }
-//            }
-//        } catch (Exception ex) {
-//            logger.log(Level.SEVERE, ex.getMessage(), ex);
-//        }
-//        return XMSReturnCode.FAILURE;
-//    }
+    public XMSReturnCode MsmlJoinNative(XMSCall call) {
+        try {
+            XMSMsmlCall c = (XMSMsmlCall) call;
+            if (c != null && c.msmlSip != null && this.msmlSip != null) {
+                boolean v = false;
+                if (this.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO
+                        && call.WaitcallOptions.m_mediatype == XMSMediaType.VIDEO) {
+                    v = true;
+                }
+                joinMap.put(this, c);
+                joinMap.put(c, this);
+                String msml;
+                if (v) {
+                    msml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+                            + "<msml version=\"1.1\" xmlns:ns2=\"http://www.dialogic.com/DialogicTypes\">\n"
+                            + "    <join id1=\"conn:" + this.msmlSip.getRemoteTag() + "\" id2=\"conn:" + c.msmlSip.getRemoteTag() + "\" mark=\"1\">\n"
+                            + "        <stream media=\"audio\" compressed=\"true\"/>\n"
+                            + "        <stream media=\"video\" compressed=\"true\"/>\n"
+                            + "    </join>\n"
+                            + "</msml>";
+                } else {
+                    msml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+                            + "<msml version=\"1.1\" xmlns:ns2=\"http://www.dialogic.com/DialogicTypes\">\n"
+                            + "    <join id1=\"conn:" + this.msmlSip.getRemoteTag() + "\" id2=\"conn:" + c.msmlSip.getRemoteTag() + "\" mark=\"1\">\n"
+                            + "        <stream media=\"audio\" dir=\"from-id1\" compressed=\"true\"/>\n"
+                            + "        <stream media=\"audio\" dir=\"to-id1\" compressed=\"true\"/>\n"
+                            + "    </join>\n"
+                            + "</msml>";
+                }
+                msmlSip.sendInfoWithoutConn(msml);
+                setState(XMSCallState.JOINING);
+                BlockIfNeeded(XMSEventType.CALL_INFO);
+                if (this.getMediaStatusCode() == 200) {
+                    return XMSReturnCode.SUCCESS;
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        return XMSReturnCode.FAILURE;
+    }
 
     /**
      * Play prompt and Collect the DTMF Digit information
