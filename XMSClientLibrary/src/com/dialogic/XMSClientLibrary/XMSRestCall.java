@@ -2697,11 +2697,15 @@ private String buildPlayRecordPayload(String a_playfile,String a_recfile) {
         // Add a new Play to the callAction
         l_join = l_callAction.addNewJoin();
 
+        
         l_join.setCallId(a_othercallid);
        // l_join.setTransactionId(getCallIdentifier()+"_"+m_transactionId++); 
         //l_join.setTransactionId(""); // Hard code this for now..
-
-
+        
+        if(JoincallOptions.m_native){    
+            l_join.setAudioTranscode(BooleanType.NO);
+            l_join.setVideoTranscode(BooleanType.NO);
+        }
        // logger.debug("RAW REST generated...." + l_WMS.toString());
         ByteArrayOutputStream l_newDialog = new ByteArrayOutputStream();
 
