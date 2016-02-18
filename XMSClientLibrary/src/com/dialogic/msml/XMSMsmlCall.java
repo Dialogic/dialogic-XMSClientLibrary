@@ -602,6 +602,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                         Msml msml = unmarshalObject(new ByteArrayInputStream((byte[]) e.getRes().getRawContent()));
                         Msml.Result result = msml.getResult();
                         if (result.getResponse().equalsIgnoreCase("200")) {
+                            System.out.println("MsmlCall");
                             this.setMediaStatusCode(Integer.parseInt(result.getResponse()));
                             XMSEvent xmsEvent = new XMSEvent();
                             xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, result.getResponse(), "", reponseMessage);

@@ -119,6 +119,7 @@ public class XMSMsmlConference extends XMSConference implements Observer {
             if (msmlCall != null && msmlCall.msmlSip != null) {
                 //msmlCall.msmlSip.sendInfoWithoutConn(buildJoinConfVideoMsml(m_Name));
                 msmlCall.msmlSip.sendInfo(buildJoinConfVideoMsml(m_Name));
+                BlockIfNeeded(XMSEventType.CALL_INFO);
                 counter++;
             }
         } catch (Exception ex) {
@@ -184,8 +185,8 @@ public class XMSMsmlConference extends XMSConference implements Observer {
                 Msml.Event event = msml.getEvent();
                 String eventName = event.getName();
                 if (eventName != null && eventName.equalsIgnoreCase("msml.conf.nomedia")) {
-                    conf.sendInfo(buildDestroyConfMsml(m_Name));
-                    conf.createBye();
+                    //conf.sendInfo(buildDestroyConfMsml(m_Name));
+                    //conf.createBye();
                     XMSEvent xmsEvent = new XMSEvent();
                     xmsEvent.CreateEvent(XMSEventType.CALL_DISCONNECTED, this, "", "", info);
                     setLastEvent(xmsEvent);
@@ -385,7 +386,7 @@ public class XMSMsmlConference extends XMSConference implements Observer {
             m_logger.error(ex.getMessage(), ex);
         }
 
-        System.out.println("MSML JOIN -> " + sw.toString());
+        //System.out.println("MSML JOIN -> " + sw.toString());
         return sw.toString();
     }
 
