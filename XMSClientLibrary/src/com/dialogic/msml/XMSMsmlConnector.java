@@ -182,8 +182,9 @@ public class XMSMsmlConnector extends XMSConnector implements SipListener, Runna
 
                 call = activeCallMap.get(CallId);
                 if (call != null) {
-                    logger.info("REINVITE RECIEVED: " + contactAddress);
+                    System.out.println("REINVITE RECIEVED: " + contactAddress);
                     call.setServerTransaction(serverTransaction);
+                    call.setInviteReceived(true);
                     call.handleStackRequest(requestEvent);
                 } else {
                     if (waitCallList.size() > 0) {

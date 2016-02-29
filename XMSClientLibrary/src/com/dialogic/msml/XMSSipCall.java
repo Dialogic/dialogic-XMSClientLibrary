@@ -68,7 +68,7 @@ public class XMSSipCall extends Observable {
     boolean isACKOn200 = true;
     boolean isOKOnInfo = true;
     private boolean isCPA = false;
-    static boolean isInvite = false;
+    private boolean inviteReceived = false;
     private Request lastInfo = null;
     private Map<String, Object> headers = new HashMap<>();
     static private Map<String, FromHeader> fromHeadersMap = new HashMap<>();
@@ -100,8 +100,10 @@ public class XMSSipCall extends Observable {
         Request request = requestEvent.getRequest();
         switch (request.getMethod()) {
             case Request.INVITE:
-                if (isInvite && this.getRemoteSdp() != null) {
-                    doReInviteOk(request);
+                if (this.isInviteReceived() && this.getRemoteSdp() != null) {
+                    MsmlEvent invite = createRequestEvent(request, MsmlEventType.REINVITE);
+                    setValue(invite);
+                    //doReInviteOk(request);
                 } else {
                     this.createTryingResponse(request);
                     if (request.getRawContent() != null) {
@@ -109,7 +111,7 @@ public class XMSSipCall extends Observable {
                     }
                     MsmlEvent invite = createRequestEvent(request, MsmlEventType.INCOMING);
                     setValue(invite);
-                    isInvite = true;
+                    this.setInviteReceived(true);
                 }
                 break;
             case Request.OPTIONS:
@@ -492,6 +494,26 @@ public class XMSSipCall extends Observable {
     }
 
     /**
+     * Forwards reinvite request to the client.
+     *
+     * @param request
+     */
+    public void sendReinviteRequest(Request request) {
+        logger.info("SEND RE-INVITE");
+        try {
+            HeaderFactory headerFactory = sipConnector.getHeaderFactory();
+            Request reinviteRequest = this.getDialog().createRequest(Request.INVITE);
+
+            ContentTypeHeader contentTypeHeader = headerFactory.createContentTypeHeader("application", "sdp");
+
+            reinviteRequest.setContent(this.getLocalSdp().getBytes(), contentTypeHeader);
+            sipConnector.sendRequest(reinviteRequest, this);
+        } catch (Exception ex) {
+            logger.fatal(ex.getMessage(), ex);
+        }
+    }
+
+    /**
      * Creates an INVITE OK response.
      *
      * @param request
@@ -589,11 +611,10 @@ public class XMSSipCall extends Observable {
         try {
             Response okResponse = messageFactory.createResponse(Response.OK, request);
 
-            SupportedHeader supportedHeader = headerFactory.createSupportedHeader("timer");
-            okResponse.addHeader(supportedHeader);
-            Header sessionExpiresHeader = request.getHeader("Session-Expires");
-            okResponse.addHeader(sessionExpiresHeader);
-
+//            SupportedHeader supportedHeader = headerFactory.createSupportedHeader("timer");
+//            okResponse.addHeader(supportedHeader);
+//            Header sessionExpiresHeader = request.getHeader("Session-Expires");
+//            okResponse.addHeader(sessionExpiresHeader);
             Address contactAddress = null;
             if (port <= 0) {
                 String reqToAddressString = reqToAddress.toString();
@@ -983,5 +1004,19 @@ public class XMSSipCall extends Observable {
      */
     public void setIsCPA(boolean isCPA) {
         this.isCPA = isCPA;
+    }
+
+    /**
+     * @return the inviteReceived
+     */
+    public boolean isInviteReceived() {
+        return inviteReceived;
+    }
+
+    /**
+     * @param inviteReceived the inviteReceived to set
+     */
+    public void setInviteReceived(boolean inviteReceived) {
+        this.inviteReceived = inviteReceived;
     }
 }

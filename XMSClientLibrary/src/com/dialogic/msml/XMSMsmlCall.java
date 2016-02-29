@@ -83,6 +83,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
     static ObjectFactory objectFactory = new ObjectFactory();
     String filename;
     static private Map<XMSMsmlCall, XMSMsmlCall> joinMap = new HashMap<>();
+    private boolean reinvite = false;
 
     public XMSMsmlCall(XMSMsmlConnector connector) {
         try {
@@ -530,8 +531,20 @@ public class XMSMsmlCall extends XMSCall implements Observer {
 
             } else if (this.getCallMode() == MsmlCallMode.OUTBOUND) {
             }
+        } else if (e.getType().equals(MsmlEventType.REINVITE)) {
+            //MRB
+            if (e.getReq() != null && e.getCall() == this.msmlSip) {
+                this.msmlSip.setInviteRequest(e.getReq());
+                this.setReinvite(true);
+                this.caller.setLocalSdp(new String(e.getReq().getRawContent()));
+                this.caller.sendReinviteRequest(e.getReq());
+            }
         } else if (e.getType().equals(MsmlEventType.CONNECTING)) {
-            if (this.getCallMode() == MsmlCallMode.INBOUND) {
+            if (this.isReinvite()) {
+                // MRB
+                this.msmlSip.setLocalSdp(new String(e.getRes().getRawContent()));
+                this.msmlSip.createInviteOk(this.msmlSip.getInviteRequest());
+            } else if (this.getCallMode() == MsmlCallMode.INBOUND) {
                 if (WaitcallOptions.m_autoConnectEnabled) {
                     if (this.caller.getLocalSdp() == null) {
                         this.caller.setLocalSdp(this.msmlSip.getRemoteSdp());
@@ -1452,5 +1465,19 @@ public class XMSMsmlCall extends XMSCall implements Observer {
      */
     public void setCallMode(MsmlCallMode callMode) {
         this.callMode = callMode;
+    }
+
+    /**
+     * @return the reinvite
+     */
+    public boolean isReinvite() {
+        return reinvite;
+    }
+
+    /**
+     * @param reinvite the reinvite to set
+     */
+    public void setReinvite(boolean reinvite) {
+        this.reinvite = reinvite;
     }
 }
