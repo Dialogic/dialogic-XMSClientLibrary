@@ -456,7 +456,7 @@ public XMSReturnCode Initialize(String a_configfile){
                     String delims = "[ ]+";
                     String[] tokens = m_ReturnPayload.split(delims);
                     for (int i = 0; i < tokens.length; i++){
-                        logger.debug("RETURN PAYLOAD TOKENS: " + tokens[i]);
+                   //     logger.debug("RETURN PAYLOAD TOKENS: " + tokens[i]);
 
                         if (tokens[i].startsWith("identifier=")){
 
@@ -464,7 +464,7 @@ public XMSReturnCode Initialize(String a_configfile){
                             String[] items = tempString.split("\"");
 
                             l_scr.set_scr_identifier(items[1]);
-                            logger.info("scr_identifier: " + l_scr.get_scr_identifier());
+               //             logger.info("scr_identifier: " + l_scr.get_scr_identifier());
                             AddCallToActiveCallList(l_scr.get_scr_identifier(),a_call);
 
                         }
@@ -474,7 +474,7 @@ public XMSReturnCode Initialize(String a_configfile){
                             String[] items = tempString.split("\"");
 
                             l_scr.set_scr_transaction_id(items[1]);
-                            logger.info("scr_transaction_id: " + l_scr.get_scr_transaction_id());
+               //             logger.info("scr_transaction_id: " + l_scr.get_scr_transaction_id());
                           }
                         if (tokens[i].startsWith("source_uri=")){
 
@@ -482,7 +482,7 @@ public XMSReturnCode Initialize(String a_configfile){
                             String[] items = tempString.split("\"");
 
                             l_scr.set_scr_source(items[1]);
-                            logger.info("src_source: " + l_scr.get_scr_source());
+                 //           logger.info("src_source: " + l_scr.get_scr_source());
                           }
                         
                      } // end if

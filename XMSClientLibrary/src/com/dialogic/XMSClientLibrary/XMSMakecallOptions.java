@@ -28,6 +28,8 @@ public class XMSMakecallOptions {
     List m_headers=new ArrayList();
     public boolean m_ACKOn200Enabled;
     public boolean m_OKOnInfoEnabled;
+    boolean m_RtcpFeedbackEnabled;
+    
     /**
      * This will Instantiate and Reset all the values to their defaults
      */
@@ -53,6 +55,7 @@ public class XMSMakecallOptions {
         m_headers.clear();
         m_ACKOn200Enabled = true;
         m_OKOnInfoEnabled = true;
+        m_RtcpFeedbackEnabled = true;
     }
 
     /**
@@ -85,6 +88,15 @@ public class XMSMakecallOptions {
         m_cpaEnabled = a_isEnabled;
     }
 
+    /**
+     * Set if rtcp should be enabled on the outbound call
+     *
+     * @param a_isEnabled - true or false if it should be enabled
+     */
+    public void EnableRtcpFeedback(boolean a_isEnabled) {
+        m_RtcpFeedbackEnabled = a_isEnabled;
+    }
+    
     /**
      * Set if ICE should be enabled on the outbound call
      *
@@ -191,7 +203,9 @@ public class XMSMakecallOptions {
                 " contenttype="+m_content_type+
                 " content="+m_content
                 + " OKOnInfoEnabled=" + m_OKOnInfoEnabled
-                + " aCKOn200Enabled=" + m_ACKOn200Enabled;
+                + " aCKOn200Enabled=" + m_ACKOn200Enabled
+                + " RtcpFeedbackEnabled=" + m_RtcpFeedbackEnabled;
+        
                 if(!m_headers.isEmpty()){
                 RtnStr+=" headers=";
                 for(int i=0;i<m_headers.size();i++){

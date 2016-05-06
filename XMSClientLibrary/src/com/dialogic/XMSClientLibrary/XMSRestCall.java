@@ -1651,16 +1651,24 @@ public class XMSRestCall extends XMSCall{
                 l_call.setEncryption(RtpEncryptionOption.NONE);
             } // end if
 
+           // Set RTC enabled parm
+            if(MakecallOptions.m_RtcpFeedbackEnabled) {
+                l_call.setRtcpFeedback(RtcpFeedbackModeOption.AUDIOVIDEO);
+            } else {
+                l_call.setRtcpFeedback(RtcpFeedbackModeOption.NONE);
+            } // end if
+
 
             if(MakecallOptions.m_signalingEnabled){
                 // Set the call attributes.
                 l_call.setDestinationUri(a_destination); // passed in..
 
                 if(getCallType() == XMSCallType.WEBRTC){
-                    logger.info("WebRTC call detected, setting dtmfmode = OUTOFBAND, ice=YES and encryption=dtls");
+                    logger.info("WebRTC call detected, setting dtmfmode = OUTOFBAND, ice=YES, encryption=dtls and RtcpFeedback=AudioVideo");
                     l_call.setIce(BooleanType.YES);
                     l_call.setEncryption(RtpEncryptionOption.DTLS);
                     l_call.setDtmfMode(DtmfModeOption.OUTOFBAND);
+                    l_call.setRtcpFeedback(RtcpFeedbackModeOption.AUDIOVIDEO);
                 }
             } else {
                     l_call.setSignaling(BooleanType.NO);

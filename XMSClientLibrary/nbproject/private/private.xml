@@ -4,9 +4,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Dan/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSRestCall.java</file>
-            <file>file:/C:/Users/Dan/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSCall.java</file>
-            <file>file:/C:/Users/Dan/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSJoincallOptions.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSRecordOptions.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSCall.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSConference.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSRestCall.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSWaitcallOptions.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSRestConnector.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSUpdatecallOptions.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSMakecallOptions.java</file>
+            <file>file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/src/com/dialogic/XMSClientLibrary/XMSAnswercallOptions.java</file>
         </group>
     </open-files>
 </project-private>
