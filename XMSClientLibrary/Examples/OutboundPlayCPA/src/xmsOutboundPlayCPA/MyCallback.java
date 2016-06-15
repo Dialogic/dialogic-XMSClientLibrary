@@ -8,20 +8,10 @@ import com.dialogic.XMSClientLibrary.*;
 
 /**
  *
- * @author dwolansk
+ * @author ssatyana
  */
-enum AppState {
-
-    WAITCALL,
-    RECORD,
-    MAKECALL,
-    PLAY
-}
-
 public class MyCallback implements XMSEventCallback {
 
-    String addr = "";
-    AppState myState = AppState.WAITCALL;
     boolean isDone = false;
 
     @Override
@@ -30,16 +20,26 @@ public class MyCallback implements XMSEventCallback {
         XMSCall myCall = a_event.getCall();
         switch (a_event.getEventType()) {
             case CALL_CONNECTED:
-                myCall.Play("./verification/greeting");
+                //myCall.Play("./verification/greeting");
                 break;
             case CALL_PLAY_END:
                 myCall.Dropcall();
                 isDone = true;
                 break;
             case CALL_DISCONNECTED:  // The far end hung up will simply wait for the media
-
+                myCall.Dropcall();
+                isDone = true;
                 break;
             case CALL_INFO:
+                System.out.println("Event after connected: " + myCall.getLastEvent());
+                if (myCall.getLastEvent().getReason().equalsIgnoreCase("voice")) {
+                    System.out.println("Voice detected: " + myCall.getLastEvent());
+                    //myCall.Play("./verification/greeting");
+                } else if (myCall.getLastEvent().getReason().equalsIgnoreCase("answer-machine")) {
+                    System.out.println("Voicemail: " + myCall.getLastEvent());
+                    System.out.println("Reason: " + myCall.getLastEvent().getReason());
+                    //myCall.Play("./verification/record_intro");
+                }
                 break;
             default:
                 System.out.println("Unknown Event Type!!");
