@@ -47,4 +47,5 @@
       </xs:simpleType>
     </xs:union>
   </xs:simpleType>
+  <xs:attribute name="objuriindex" type="xs:nonNegativeInteger"/> 
 </xs:schema>
