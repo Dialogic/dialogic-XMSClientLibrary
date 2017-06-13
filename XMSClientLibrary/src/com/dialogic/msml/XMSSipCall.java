@@ -266,7 +266,7 @@ public class XMSSipCall extends Observable {
             MaxForwardsHeader maxForwardsHeader = headerFactory.createMaxForwardsHeader(70);
 
             Request request = null;
-            if (isCPA) {
+            if (this.isCPA) {
                 String uri = requestUri.toString() + ";cpa=yes";
                 URI reqUri = addressFactory.createURI(uri);
                 if (this.getLocalSdp() != null) {
@@ -359,12 +359,15 @@ public class XMSSipCall extends Observable {
 
             if (msml.contains("conn:*")) {
                 infoRequest.setContent(msml, contTypeHeader);
-            } else {
-                logger.info("REMOTE TAG -> " + this.getDialog().getRemoteTag());
+            } else if (msml.contains("conn:1234")) {
+                System.out.println("REMOTE TAG -> " + this.getDialog().getRemoteTag());
                 msml = msml.replaceAll("conn:.*?\\\"", "conn:" + this.getDialog().getRemoteTag() + "\"");
                 infoRequest.setContent(msml, contTypeHeader);
+            } else {
+                System.out.println("DIRECT TAG ");
+                infoRequest.setContent(msml, contTypeHeader);
             }
-            logger.info("CREATING INFO REQUEST TO XMS");
+            System.out.println("CREATING INFO REQUEST TO XMS");
             sipConnector.sendRequest(infoRequest, this);
 
         } catch (SipException | ParseException ex) {
@@ -574,6 +577,7 @@ public class XMSSipCall extends Observable {
             Request byeRequest = this.getDialog().createRequest(Request.BYE);
             logger.info("CREATE BYE REQUEST");
             logger.debug("CREATE BYE REQUEST \n" + byeRequest);
+            this.setIsCPA(false);
             sipConnector.sendRequest(byeRequest, this);
         } catch (SipException ex) {
             logger.fatal(ex.getMessage(), ex);

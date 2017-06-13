@@ -29,6 +29,7 @@ public class XMSMakecallOptions {
     public boolean m_ACKOn200Enabled;
     public boolean m_OKOnInfoEnabled;
     boolean m_RtcpFeedbackEnabled;
+    public XMSRtcpFeedbackModeOption m_rtcpModeOption;
     
     /**
      * This will Instantiate and Reset all the values to their defaults
@@ -56,6 +57,7 @@ public class XMSMakecallOptions {
         m_ACKOn200Enabled = true;
         m_OKOnInfoEnabled = true;
         m_RtcpFeedbackEnabled = true;
+        m_rtcpModeOption = XMSRtcpFeedbackModeOption.NONE;
     }
 
     /**
@@ -168,6 +170,10 @@ public class XMSMakecallOptions {
      */
     public void SetMediaType(XMSMediaType a_mediaType) {
         m_mediaType = a_mediaType;
+    }
+
+    public void SetRtcpFeedbackModeOption(XMSRtcpFeedbackModeOption a_rtcpModeOption) {
+        m_rtcpModeOption = a_rtcpModeOption;
     }
 
     public void EnableACKOn200(boolean a_isEnabled) {

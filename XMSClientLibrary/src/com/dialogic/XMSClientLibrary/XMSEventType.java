@@ -27,6 +27,7 @@ public enum XMSEventType {
     CALL_INFO,
     CALL_DTMF,
     CALL_CUSTOM_INFO,
-    CALL_CUSTOME_INFO_END
+    CALL_CUSTOME_INFO_END,
+    CALL_MEDIA_STARTED
        
 }

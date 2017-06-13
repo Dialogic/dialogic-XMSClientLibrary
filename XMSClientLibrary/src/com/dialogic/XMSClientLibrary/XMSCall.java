@@ -282,9 +282,13 @@ public abstract class XMSCall extends XMSObject{
      public XMSReturnCode PlayCollect(String a_playfile){
          //TODO Is this better called PlayAndCollect or PlayAndCollectDigits
         return XMSReturnCode.NOT_IMPLEMENTED;
-    } 
+    }
+
+    public XMSReturnCode Updatecall() {
+        return XMSReturnCode.NOT_IMPLEMENTED;
+    }
      
-     public XMSReturnCode Updatecall(){
+     public XMSReturnCode Updatecall(XMSConference a_conf){
          return XMSReturnCode.NOT_IMPLEMENTED;
      }
      /**

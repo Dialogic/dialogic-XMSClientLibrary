@@ -152,5 +152,17 @@ public abstract class XMSConference extends XMSObject {
       */
      public XMSReturnCode Stop(){
          return XMSReturnCode.NOT_IMPLEMENTED;
-     }
+    }
+
+    public XMSReturnCode updateConf() {
+        return XMSReturnCode.NOT_IMPLEMENTED;
+    }
+
+    public XMSReturnCode PlayConfMsml(String a_file, String a_dialogname) {
+        return XMSReturnCode.NOT_IMPLEMENTED;
+    }
+
+    public XMSReturnCode MsmlStop(String a_dialogname) {
+        return XMSReturnCode.NOT_IMPLEMENTED;
+    }
 }

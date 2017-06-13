@@ -308,6 +308,10 @@ public class xmsEventHandler implements Runnable {
                    for(;;)
                    {
                        String m_line = reader.readLine();
+                       if(m_line.isEmpty()) {
+                           System.out.println("m_line: ["+m_line +"] Invalid");
+                          continue; 
+                       } 
                        int ChunkSize = Integer.parseInt(m_line, 16);
                        char buff[] =new char[ChunkSize];
                        if (ChunkSize<=0)

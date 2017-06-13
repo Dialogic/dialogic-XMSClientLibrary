@@ -22,6 +22,8 @@ public class XMSConferenceOptions {
     boolean m_DestroyWhenEmpty = true;
     public String m_active_talker_interval = "500ms";
     public String m_active_talker_region = "";
+    public XMSConfMixingMode m_mixingMode;
+    public XMSLayoutSizeOption m_layoutSizeOption;
    
     public XMSConferenceOptions() {
         Reset();
@@ -40,6 +42,8 @@ public class XMSConferenceOptions {
         m_DestroyWhenEmpty = true;
         m_active_talker_interval = "500ms";
         m_active_talker_region = "";
+        m_mixingMode = XMSConfMixingMode.MCU;
+        m_layoutSizeOption = XMSLayoutSizeOption.AUTOMATIC;
     }
 
     public void SetMaxParties(int a_maxparties) {
@@ -94,6 +98,15 @@ public class XMSConferenceOptions {
      public void SetActiveTalkerRegion(String a_region) {
         m_active_talker_region = a_region;
     }
+
+    public void SetMixingMode(XMSConfMixingMode a_mixingMode) {
+        m_mixingMode = a_mixingMode;
+    }
+
+    public void SetLayoutSizeOption(XMSLayoutSizeOption a_layoutSizeOption) {
+        m_layoutSizeOption = a_layoutSizeOption;
+    }
+
     @Override
     public String toString() {
         return "m_MaxParties=" + m_MaxParties

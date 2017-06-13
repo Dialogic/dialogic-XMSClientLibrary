@@ -21,6 +21,18 @@ public class XMSRecordOptions {
     public boolean m_isBeepEnabled;
     public String m_timeoutValue;
     public String m_maxTime;
+    public XMSAudioCodecOption m_audioMimeCodec;
+    public XMSAudioRateOption m_audioMimeRate;
+    public String m_audioMimeMode;
+    public String m_videoMimeHeight;
+    public String m_videoMimeWidth;
+    public XMSVideoCodecOption m_videoMimeCodec;
+    public String m_videoMimeFramerate;
+    public String m_videoMimeMaxbitrate;
+    public String m_videoMimeLevel;
+    public String m_videoMimeProfile;
+    public XMSAudioTypeOption m_audioTypeOption;
+    public XMSRecordingVideoTypeOption m_videoTypeOption;
 
     /**
      * This will Instantiate and Reset all the values to their defaults
@@ -30,7 +42,9 @@ public class XMSRecordOptions {
     }
 
     /**
-     * Resets all the contents back to default
+     * Resets all the contents back to default Note: the mime params defaults
+     * are for mp4 container. The values of these params vary based on the
+     * container selected. Please refer RestAPI guide for the correct values.
      */
     public void Reset() {
 
@@ -44,6 +58,18 @@ public class XMSRecordOptions {
         m_isBeepEnabled = true;
         m_timeoutValue = "";
         m_maxTime = "30s";
+        m_audioMimeCodec = XMSAudioCodecOption.AMR;
+        m_audioMimeRate = XMSAudioRateOption.X_16000;
+        m_audioMimeMode = "7";
+        m_videoMimeHeight = "480";
+        m_videoMimeWidth = "640";
+        m_videoMimeCodec = XMSVideoCodecOption.H_263;
+        m_videoMimeFramerate = "15";
+        m_videoMimeMaxbitrate = "768000";
+        m_videoMimeLevel = "3.1";
+        m_videoMimeProfile = "66";
+        m_audioTypeOption = XMSAudioTypeOption.AUDIO_MP_4;
+        m_videoTypeOption = XMSRecordingVideoTypeOption.VIDEO_MP_4;
 
     }
 
@@ -155,6 +181,54 @@ public class XMSRecordOptions {
      */
     public void SetTimeout(int a_timeoutValue) {
         m_timeoutValue = a_timeoutValue + "s"; // Append 's' at the end of the string for seconds
+    }
+
+    public void setAudioMimeCodec(XMSAudioCodecOption a_audioMimeCodec) {
+        m_audioMimeCodec = a_audioMimeCodec;
+    }
+
+    public void setAudioMimeRate(XMSAudioRateOption a_audioMimeRate) {
+        m_audioMimeRate = a_audioMimeRate;
+    }
+
+    public void setAudioMimeMode(String a_audioMimeMode) {
+        m_audioMimeMode = a_audioMimeMode;
+    }
+
+    public void setVideoMimeHeight(String a_videoMimeHeight) {
+        m_videoMimeHeight = a_videoMimeHeight;
+    }
+
+    public void setVideoMimeWidth(String a_videoMimeWidth) {
+        m_videoMimeWidth = a_videoMimeWidth;
+    }
+
+    public void setVideoMimeCodec(XMSVideoCodecOption a_videoMimeCodec) {
+        m_videoMimeCodec = a_videoMimeCodec;
+    }
+
+    public void setVideoMimeFramerate(String a_videoMimeFramerate) {
+        m_videoMimeFramerate = a_videoMimeFramerate;
+    }
+
+    public void setVideoMimeMaxbitrate(String a_videoMimeMaxbitrate) {
+        m_videoMimeMaxbitrate = a_videoMimeMaxbitrate;
+    }
+
+    public void setVideoMimeLevel(String a_videoMimeLevel) {
+        m_videoMimeLevel = a_videoMimeLevel;
+    }
+
+    public void setVideoMimeProfile(String a_videoMimeProfile) {
+        m_videoMimeProfile = a_videoMimeProfile;
+    }
+
+    public void setAudioTypeOption(XMSAudioTypeOption a_audioTypeOption) {
+        m_audioTypeOption = a_audioTypeOption;
+    }
+
+    public void setVideoTypeOption(XMSRecordingVideoTypeOption a_videoTypeOption) {
+        m_videoTypeOption = a_videoTypeOption;
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.dialogic.XMSClientLibrary.XMSEvent;
 import com.dialogic.XMSClientLibrary.XMSEventType;
 import com.dialogic.XMSClientLibrary.XMSMediaType;
 import com.dialogic.XMSClientLibrary.XMSReturnCode;
+import com.dialogic.xms.msml.AudioMixType;
 import com.dialogic.xms.msml.BooleanDatatype;
 import com.dialogic.xms.msml.DialogLanguageDatatype;
 import com.dialogic.xms.msml.ExitType;
@@ -162,7 +163,12 @@ public class XMSMsmlConference extends XMSConference implements Observer {
                 Msml msml = unmarshalObject(new ByteArrayInputStream((byte[]) e.getRes().getRawContent()));
                 Msml.Result result = msml.getResult();
                 this.setMediaStatusCode(Integer.parseInt(result.getResponse()));
-                if (result.getResponse().equalsIgnoreCase("200")) {
+                if (m_state == XMSCallState.CUSTOM) {
+                    XMSEvent xmsEvent = new XMSEvent();
+                    xmsEvent.CreateEvent(XMSEventType.CALL_CUSTOM_INFO, this, "", "", reponseMessage);
+                    setLastEvent(xmsEvent);
+                    UnblockIfNeeded(xmsEvent);
+                } else if (result.getResponse().equalsIgnoreCase("200")) {
                     System.out.println("Response received" + result.getResponse());
                     XMSEvent xmsEvent = new XMSEvent();
                     xmsEvent.CreateEvent(XMSEventType.CALL_INFO, this, result.getResponse(), "", reponseMessage);
@@ -226,7 +232,7 @@ public class XMSMsmlConference extends XMSConference implements Observer {
     @Override
     public XMSReturnCode Play(String a_file) {
         try {
-            conf.sendInfo(buildConfPlayMsml(m_Name, a_file));
+            conf.sendInfo(buildConfPlayMsml(m_Name, a_file, null));
             BlockIfNeeded(XMSEventType.CALL_INFO);
             if (this.getMediaStatusCode() == 200) {
                 BlockIfNeeded(XMSEventType.CALL_PLAY_END);
@@ -235,6 +241,56 @@ public class XMSMsmlConference extends XMSConference implements Observer {
             }
         } catch (InterruptedException ex) {
             java.util.logging.Logger.getLogger(XMSMsmlConference.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return XMSReturnCode.SUCCESS;
+    }
+
+    @Override
+    public XMSReturnCode PlayConfMsml(String a_file, String dialogname) {
+        try {
+            conf.sendInfo(buildConfPlayMsml(m_Name, a_file, dialogname));
+            BlockIfNeeded(XMSEventType.CALL_INFO);
+            if (this.getMediaStatusCode() == 200) {
+                BlockIfNeeded(XMSEventType.CALL_PLAY_END);
+            } else {
+                return XMSReturnCode.FAILURE;
+            }
+        } catch (InterruptedException ex) {
+            java.util.logging.Logger.getLogger(XMSMsmlConference.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return XMSReturnCode.SUCCESS;
+    }
+
+    @Override
+    public XMSReturnCode MsmlStop(String dialogname) {
+        try {
+            m_state = XMSCallState.CUSTOM;
+            conf.sendInfo(buildDialogEndMsml(m_Name, dialogname));
+            BlockIfNeeded(XMSEventType.CALL_CUSTOM_INFO);
+            if (this.getMediaStatusCode() == 200) {
+                BlockIfNeeded(XMSEventType.CALL_CUSTOME_INFO_END);
+            } else {
+                return XMSReturnCode.FAILURE;
+            }
+        } catch (Exception ex) {
+            m_logger.error(ex.getMessage(), ex);
+        }
+        return XMSReturnCode.SUCCESS;
+    }
+
+    @Override
+    public XMSReturnCode Stop() {
+        try {
+            m_state = XMSCallState.CUSTOM;
+            conf.sendInfo(buildDialogEnd(m_Name));
+            BlockIfNeeded(XMSEventType.CALL_CUSTOM_INFO);
+            if (this.getMediaStatusCode() == 200) {
+                BlockIfNeeded(XMSEventType.CALL_CUSTOME_INFO_END);
+            } else {
+                return XMSReturnCode.FAILURE;
+            }
+        } catch (Exception ex) {
+            m_logger.error(ex.getMessage(), ex);
         }
         return XMSReturnCode.SUCCESS;
     }
@@ -282,15 +338,18 @@ public class XMSMsmlConference extends XMSConference implements Observer {
         createConf.setMark("1");
         createConf.setTerm(BooleanDatatype.TRUE);
 
-        VideoLayoutType videoLayout = objectFactory.createVideoLayoutType();
+        AudioMixType audioLayout = objectFactory.createAudioMixType();
+        audioLayout.setId("dialogicmix");
+        createConf.setAudiomix(audioLayout);
 
-        RootType rootType = objectFactory.createRootType();
-        rootType.setSize("VGA");
-        videoLayout.setRoot(rootType);
-
-        videoLayout.getRegion().add(buildRegion("1", "0", "0", "1"));
-        createConf.setVideolayout(videoLayout);
-
+//        VideoLayoutType videoLayout = objectFactory.createVideoLayoutType();
+//
+//        RootType rootType = objectFactory.createRootType();
+//        rootType.setSize("VGA");
+//        videoLayout.setRoot(rootType);
+//
+//        videoLayout.getRegion().add(buildRegion("1", "0", "0", "1"));
+//        createConf.setVideolayout(videoLayout);
         msml.getMsmlRequest().add(createConf);
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(Msml.class);
@@ -460,7 +519,7 @@ public class XMSMsmlConference extends XMSConference implements Observer {
      * @param fileName - File to be played.
      * @return MSML script.
      */
-    private String buildConfPlayMsml(String confName, String fileName) {
+    private String buildConfPlayMsml(String confName, String fileName, String dialogname) {
         java.io.StringWriter sw = new StringWriter();
 
         Msml msml = objectFactory.createMsml();
@@ -469,7 +528,11 @@ public class XMSMsmlConference extends XMSConference implements Observer {
         Msml.Dialogstart dialogstart = objectFactory.createMsmlDialogstart();
         dialogstart.setTarget("conf:" + confName);
         dialogstart.setType(DialogLanguageDatatype.APPLICATION_MOML_XML);
-        dialogstart.setName("Play");
+        if (dialogname == null) {
+            dialogstart.setName("Play");
+        } else {
+            dialogstart.setName(dialogname);
+        }
 
         Play play = objectFactory.createPlay();
         play.setBarge(BooleanDatatype.FALSE);
@@ -491,6 +554,52 @@ public class XMSMsmlConference extends XMSConference implements Observer {
 
         dialogstart.getMomlRequest().add(objectFactory.createPlay(play));
         msml.getMsmlRequest().add(dialogstart);
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(Msml.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            jaxbMarshaller.marshal(msml, sw);
+
+        } catch (JAXBException ex) {
+            m_logger.error(ex.getMessage(), ex);
+        }
+        return sw.toString();
+    }
+
+    private String buildDialogEndMsml(String confName, String dialogname) {
+        java.io.StringWriter sw = new StringWriter();
+
+        Msml msml = objectFactory.createMsml();
+        msml.setVersion("1.1");
+
+        Msml.Dialogend dialogend = objectFactory.createMsmlDialogend();
+        dialogend.setId("conf:" + confName + "/dialog:" + dialogname);
+
+        msml.getMsmlRequest().add(dialogend);
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(Msml.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            jaxbMarshaller.marshal(msml, sw);
+
+        } catch (JAXBException ex) {
+            m_logger.error(ex.getMessage(), ex);
+        }
+        return sw.toString();
+    }
+
+    private String buildDialogEnd(String confName) {
+        java.io.StringWriter sw = new StringWriter();
+
+        Msml msml = objectFactory.createMsml();
+        msml.setVersion("1.1");
+
+        Msml.Dialogend dialogend = objectFactory.createMsmlDialogend();
+        dialogend.setId("conf:" + confName + "/dialog:Play");
+
+        msml.getMsmlRequest().add(dialogend);
 
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(Msml.class);
