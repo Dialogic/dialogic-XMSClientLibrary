@@ -22,6 +22,8 @@ import com.dialogic.xms.msml.Msml;
 import com.dialogic.xms.msml.ObjectFactory;
 import com.dialogic.xms.msml.Play;
 import com.dialogic.xms.msml.RootType;
+import com.dialogic.xms.msml.StreamDirDatatype;
+import com.dialogic.xms.msml.StreamMediaDatatype;
 import com.dialogic.xms.msml.StreamType;
 import com.dialogic.xms.msml.VideoLayoutType;
 import com.dialogic.xms.msml.VideoLayoutType.Region;
@@ -377,7 +379,7 @@ public class XMSMsmlConference extends XMSConference implements Observer {
         join.setMark("2");
 
         StreamType streamType = objectFactory.createStreamType();
-        streamType.setMedia("audio");
+        streamType.setMedia(StreamMediaDatatype.AUDIO);
 
         join.getStream().add(streamType);
         msml.getMsmlRequest().add(join);
@@ -670,16 +672,16 @@ public class XMSMsmlConference extends XMSConference implements Observer {
         join.setMark(mark);
 
         StreamType streamType1 = objectFactory.createStreamType();
-        streamType1.setMedia("audio");
+        streamType1.setMedia(StreamMediaDatatype.AUDIO);
 
         StreamType streamType2 = objectFactory.createStreamType();
-        streamType2.setMedia("video");
-        streamType2.setDir("from-id1");
+        streamType2.setMedia(StreamMediaDatatype.VIDEO);
+        streamType2.setDir(StreamDirDatatype.FROM_ID_1);
         streamType2.setDisplay(display);
 
         StreamType streamType3 = objectFactory.createStreamType();
-        streamType3.setMedia("video");
-        streamType3.setDir("to-id1");
+        streamType3.setMedia(StreamMediaDatatype.VIDEO);
+        streamType3.setDir(StreamDirDatatype.TO_ID_1);
 
         join.getStream().add(streamType1);
         join.getStream().add(streamType2);
@@ -695,13 +697,13 @@ public class XMSMsmlConference extends XMSConference implements Observer {
         join.setMark(mark);
 
         StreamType streamType2 = objectFactory.createStreamType();
-        streamType2.setMedia("audio");
-        streamType2.setDir("from-id1");
+        streamType2.setMedia(StreamMediaDatatype.AUDIO);
+        streamType2.setDir(StreamDirDatatype.FROM_ID_1);
         //streamType2.setEchoCancel("enable");
 
         StreamType streamType3 = objectFactory.createStreamType();
-        streamType3.setMedia("audio");
-        streamType3.setDir("to-id1");
+        streamType3.setMedia(StreamMediaDatatype.AUDIO);
+        streamType3.setDir(StreamDirDatatype.TO_ID_1);
 
         join.getStream().add(streamType2);
         join.getStream().add(streamType3);

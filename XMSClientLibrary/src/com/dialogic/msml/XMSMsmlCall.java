@@ -22,6 +22,7 @@ import com.dialogic.xms.msml.ObjectFactory;
 import com.dialogic.xms.msml.Play;
 import com.dialogic.xms.msml.Record;
 import com.dialogic.xms.msml.Send;
+import com.dialogic.xms.msml.StreamMediaDatatype;
 import com.dialogic.xms.msml.StreamType;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -1242,16 +1243,16 @@ public class XMSMsmlCall extends XMSCall implements Observer {
 
         if (isVideo) {
             StreamType streamType1 = objectFactory.createStreamType();
-            streamType1.setMedia("audio");
+            streamType1.setMedia(StreamMediaDatatype.AUDIO);
 
             StreamType streamType2 = objectFactory.createStreamType();
-            streamType2.setMedia("video");
+            streamType2.setMedia(StreamMediaDatatype.VIDEO);
 
             join.getStream().add(streamType1);
             join.getStream().add(streamType2);
         } else {
             StreamType streamType1 = objectFactory.createStreamType();
-            streamType1.setMedia("audio");
+            streamType1.setMedia(StreamMediaDatatype.AUDIO);
 
             join.getStream().add(streamType1);
         }

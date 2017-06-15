@@ -89,11 +89,23 @@
   </xs:simpleType>
   <xs:simpleType name="regionPosition.datatype">
     <xs:restriction base="xs:string">
-      <xs:pattern value="([0-9]*\.)?[0-9]+(%)?" />
+      <xs:pattern value="([0-9]+/([1-9][0-9]*)|([0-9]*\.)?[0-9]+(%)?)" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="auditStateList.datatype">
     <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:simpleType name="streamDir.datatype">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="to-id1" />
+      <xs:enumeration value="from-id1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="streamMedia.datatype">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="audio" />
+      <xs:enumeration value="video" />
+    </xs:restriction>
   </xs:simpleType>
   <!-- END MOML-DATATYPES.XSD -->
   <!-- BEGIN MOML-CORE-MODULE.XSD -->
@@ -149,6 +161,14 @@
       <xs:attribute name="id" type="xs:string" use="required" />
     </xs:complexType>
   </xs:element>
+  <xs:element name="track">
+    <xs:complexType>
+      <xs:attribute name="trackid" type="xs:nonNegativeInteger" use="required" />
+      <xs:attribute name="id1" type="independentID.datatype" use="optional" />
+      <xs:attribute name="dir" type="streamDir.datatype" use="optional" />
+      <xs:attribute name="media" type="streamMedia.datatype" use="required" />
+    </xs:complexType>
+  </xs:element>
   
   <!-- END MOML-CORE-MODULE.XSD -->
   <!-- BEGIN MOML-GROUP-MODULE.XSD -->
@@ -189,6 +209,7 @@
                   <!-- REMOVING DEFAULT VALUE BELOW xs:attribute name="iterate" type="iterate.datatype" default="1"/-->
                   <xs:attribute name="iterate" type="iterate.datatype" />
                   <xs:attribute name="format" type="xs:string" use="optional" />
+                  <xs:attribute name="audiotrack" type="xs:nonNegativeInteger" use="optional" default="0" />
                   <xs:attribute name="audiosamplerate" type="xs:positiveInteger" use="optional" />
                   <xs:attribute name="audiosamplesize" type="xs:positiveInteger" use="optional" />
                   <xs:attribute ref="xml:lang" />
@@ -201,6 +222,7 @@
                   <!-- REMOVING DEFAULT VALUE BELOW xs:attribute name="iterate" type="iterate.datatype" use="optional" default="1"/-->
                   <xs:attribute name="iterate" type="iterate.datatype" use="optional" />
                   <xs:attribute name="format" type="xs:string" use="optional" />
+                  <xs:attribute name="audiotrack" type="xs:nonNegativeInteger" use="optional" default="0" />
                   <!-- NOT SUPPORTED xs:attribute name="audiosamplerate" type="xs:positiveInteger" use="optional"/-->
                   <!-- NOT SUPPORTED xs:attribute name="audiosamplesize" type="xs:positiveInteger" use="optional"/-->
                   <!-- NOT SUPPORTED xs:attribute name="codecconfig" type="xs:string" use="optional"/-->
@@ -293,6 +315,7 @@
         <xs:extension base="primitiveType">
           <xs:sequence>
             <xs:element ref="play" minOccurs="0"/>
+            <xs:element ref="track" minOccurs="0"/>
             <xs:element name="recordexit" minOccurs="0">
               <xs:complexType>
                 <xs:group ref="sendType" />
@@ -380,6 +403,7 @@
                       <!-- NOT SUPPORTED xs:enumeration value="mgcp"/-->
                       <!-- NOT SUPPORTED xs:enumeration value="megaco"/-->
                       <xs:enumeration value="moml+digits" />
+                      <xs:enumeration value="perlregex" />
                     </xs:restriction>
                   </xs:simpleType>
                 </xs:attribute>
@@ -436,6 +460,7 @@
                       <!-- NOT SUPPORTED xs:enumeration value="mgcp"/-->
                       <!-- NOT SUPPORTED xs:enumeration value="megaco"/-->
                       <xs:enumeration value="moml+digits" />
+                      <xs:enumeration value="perlregex" />
                     </xs:restriction>
                   </xs:simpleType>
                 </xs:attribute>
@@ -1250,22 +1275,9 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="basicStreamType">
-    <xs:attribute name="dir">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:enumeration value="to-id1" />
-          <xs:enumeration value="from-id1" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="media">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:enumeration value="audio" />
-          <xs:enumeration value="video" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="dir" type="streamDir.datatype" />
+    <xs:attribute name="media" type="streamMedia.datatype" />
+    <xs:attribute name="compressed" type="boolean.datatype" />
   </xs:complexType>
   <xs:complexType name="streamType">
     <xs:complexContent>
@@ -1423,6 +1435,10 @@
        </xs:restriction>
       </xs:simpleType>
      </xs:attribute>
+     <xs:attribute ref="dlgc:height"/>
+     <xs:attribute ref="dlgc:width"/>
+     <xs:attribute ref="dlgc:backgroundcolor"/>
+     <xs:attribute ref="dlgc:aspectmode"/>
     </xs:complexType>
   <xs:complexType name="selectorType">
      <xs:attribute name="id" type="xs:string" use="required"/>
@@ -1466,8 +1482,8 @@
        </xs:restriction>
       </xs:simpleType>
      </xs:attribute>
-     <!--xs:attribute name="backgroundcolor" type="xs:string" default="black"/-->
-     <!--xs:attribute name="backgroundimage" type="xs:anyURI"/-->
+     <xs:attribute name="backgroundcolor" type="xs:string" default="black"/>
+     <xs:attribute name="backgroundimage" type="xs:anyURI"/>
     </xs:complexType>
   <xs:attribute name="mark" type="mark.datatype" />
   <!-- END MSML.XSD -->

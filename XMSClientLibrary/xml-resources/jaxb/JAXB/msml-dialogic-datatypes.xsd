@@ -3,7 +3,13 @@
     elementFormDefault="qualified"
     attributeFormDefault="unqualified"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:dlgc="http://www.dialogic.com/DialogicTypes"
 >
+  <xs:simpleType name="regionSize.datatype">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="([0-9]+/([1-9][0-9]*)|([0-9]*\.)?[0-9]+(%)?)" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:attribute name="conf_party_type" default="standard">
    <xs:simpleType>
      <xs:restriction base="xs:string">
@@ -48,4 +54,16 @@
     </xs:union>
   </xs:simpleType>
   <xs:attribute name="objuriindex" type="xs:nonNegativeInteger"/> 
+  <xs:attribute name="height" type="dlgc:regionSize.datatype"/>
+  <xs:attribute name="width" type="dlgc:regionSize.datatype"/>
+  <xs:attribute name="backgroundcolor" type="xs:string" default="black"/>
+  <xs:attribute name="aspectmode" default="fill">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+       <xs:enumeration value="fill" />
+       <xs:enumeration value="fit" />
+       <xs:enumeration value="crop" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
 </xs:schema>
