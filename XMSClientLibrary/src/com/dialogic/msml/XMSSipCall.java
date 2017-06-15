@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Random;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
@@ -538,12 +539,20 @@ public class XMSSipCall extends Observable {
         try {
             Response okResponse = messageFactory.createResponse(Response.OK, this.getServerTransaction().getRequest());
             Address contactAddress = null;
+            System.out.println("linphone" + reqToAddress);
+            String reqToAddressString = reqToAddress.toString();
+            Pattern pattern = Pattern.compile("<.*?>");
+            Matcher m = pattern.matcher(reqToAddressString);
+            if (m.find()) {
+                System.out.println(m.group(0));
+                reqToAddressString = m.group(0);;
+            }
             if (port <= 0) {
-                String reqToAddressString = reqToAddress.toString();
                 if (reqToAddressString.contains("<")) {
                     reqToAddressString = reqToAddressString.replace("<", "");
                     reqToAddressString = reqToAddressString.replace(">", "");
                 }
+
                 contactAddress = addressFactory.createAddress(reqToAddressString
                         + ":" + sipConnector.sipProvider.getListeningPoint("udp").getPort());
             } else {
