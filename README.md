@@ -18,6 +18,9 @@ Tech note on how to use this library can be found at
 
 http://www.dialogic.com/support/helpweb/helpweb.aspx/4002/getting_started_with_the_xms_java_sample_client_library/PM_XMS
 
+Tech note on how to generate jaxb objects can be found at
+
+http://www.dialogic.com/support/helpweb/helpweb.aspx/4744/how_to_create_jaxb_classes_in_client_library_using_msml_xsd_file/pm_xms
 
 Useful Links
 =============
