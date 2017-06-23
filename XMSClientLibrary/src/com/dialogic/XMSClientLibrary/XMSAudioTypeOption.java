@@ -21,5 +21,6 @@ public enum XMSAudioTypeOption {
     AUDIO_MP_4,
     AUDIO_MKV,
     AUDIO_WEBM,
-    TEXT_URI_LIST
+    TEXT_URI_LIST,
+    AUDIO_AUTOSELECT
 }

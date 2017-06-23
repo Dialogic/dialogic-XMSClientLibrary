@@ -16,5 +16,6 @@ public enum XMSAudioCodecOption {
     AMR,
     AMR_WB,
     OPUS,
-    NATIVE
+    NATIVE,
+    AUTOSELECT
 }

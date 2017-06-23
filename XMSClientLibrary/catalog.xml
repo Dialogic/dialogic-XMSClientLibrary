@@ -4,4 +4,7 @@
     <system systemId="file:/C:/Users/ssatyana/Documents/NetBeansProjects/dialogic-rest-java/XMSClientLibrary/msml-dialogic-datatypes.xsd" uri="xml-resources/jaxb/XMSMsml/msml-dialogic-datatypes.xsd"/>
     <system systemId="file:/C:/Users/ssatyana/Documents/NetBeansProjects/dialogic-XMSClientLibrary/XMSClientLibrary/msml.xsd" uri="xml-resources/jaxb/XMSMsml/msml.xsd"/>
     <system systemId="file:/C:/Users/ssatyana/Documents/NetBeansProjects/dialogic-XMSClientLibrary/XMSClientLibrary/msml-dialogic-datatypes.xsd" uri="xml-resources/jaxb/XMSMsml/msml-dialogic-datatypes.xsd"/>
+    <system systemId="file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/msml.xsd" uri="xml-resources/jaxb/MSMLXML/msml.xsd"/>
+    <system systemId="file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/xml.xsd" uri="xml-resources/jaxb/MSMLXML/xml.xsd"/>
+    <system systemId="file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/msml-dialogic-datatypes.xsd" uri="xml-resources/jaxb/MSMLXML/msml-dialogic-datatypes.xsd"/>
 </catalog>

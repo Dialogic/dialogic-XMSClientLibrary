@@ -16,5 +16,6 @@ public enum XMSVideoCodecOption {
     JPEG,
     VP_8,
     VP_9,
-    NATIVE
+    NATIVE,
+    AUTOSELECT
 }

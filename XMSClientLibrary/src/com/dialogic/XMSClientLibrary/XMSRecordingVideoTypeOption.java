@@ -15,5 +15,6 @@ public enum XMSRecordingVideoTypeOption {
     IMAGE_JPEG,
     VIDEO_MP_4,
     VIDEO_MKV,
-    VIDEO_WEBM
+    VIDEO_WEBM,
+    VIDEO_AUTOSELECT
 }

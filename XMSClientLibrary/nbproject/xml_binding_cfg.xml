@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <schemas xmlns='http://xml.netbeans.org/schema/JAXBWizConfig' destdir='build/generated-sources/jaxb' projectName='XMSClientLibrary' version='1.0'>
-	<schema type='-xmlschema' package='com.dialogic.xms.msml' name='XMSMsml'>
+	<schema type='-xmlschema' package='com.dialogic.xms.msml' name='MSMLXML'>
 		<xjc-options>
 		</xjc-options>
 		<schema-sources>
-			<schema-source location='xml-resources/jaxb/XMSMsml/msml.xsd' origLocation='msml.xsd'/>
+			<schema-source location='xml-resources/jaxb/MSMLXML/msml.xsd' origLocation='xml-resources/jaxb/JAXB Binding/msml.xsd'/>
 		</schema-sources>
 		<bindings>
 		</bindings>

@@ -58,18 +58,18 @@ public class XMSRecordOptions {
         m_isBeepEnabled = true;
         m_timeoutValue = "";
         m_maxTime = "30s";
-        m_audioMimeCodec = XMSAudioCodecOption.AMR;
+        m_audioMimeCodec = XMSAudioCodecOption.AUTOSELECT;
         m_audioMimeRate = XMSAudioRateOption.X_16000;
         m_audioMimeMode = "7";
         m_videoMimeHeight = "480";
         m_videoMimeWidth = "640";
-        m_videoMimeCodec = XMSVideoCodecOption.H_263;
+        m_videoMimeCodec = XMSVideoCodecOption.AUTOSELECT;
         m_videoMimeFramerate = "15";
         m_videoMimeMaxbitrate = "768000";
         m_videoMimeLevel = "3.1";
         m_videoMimeProfile = "66";
-        m_audioTypeOption = XMSAudioTypeOption.AUDIO_MP_4;
-        m_videoTypeOption = XMSRecordingVideoTypeOption.VIDEO_MP_4;
+        m_audioTypeOption = XMSAudioTypeOption.AUDIO_AUTOSELECT;
+        m_videoTypeOption = XMSRecordingVideoTypeOption.VIDEO_AUTOSELECT;
 
     }
 

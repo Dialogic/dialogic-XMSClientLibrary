@@ -1115,15 +1115,15 @@ public class XMSRestCall extends XMSCall {
         String l_urlext;
         l_urlext = "calls/" + m_callIdentifier;
 
+        String l_recfile = a_recfile;
         // TODO get this fixed and remove this dumb workaround
         // WORKAROUND
-        String l_recfile = a_recfile;
-        if (a_recfile.toLowerCase().endsWith(".wav") || a_recfile.toLowerCase().endsWith(".vid")) {
-            l_recfile = a_recfile.substring(0, a_recfile.length() - 4);
-        }
-        XMLPAYLOAD = buildRecordPayload(l_recfile);
+        //if (a_recfile.toLowerCase().endsWith(".wav") || a_recfile.toLowerCase().endsWith(".vid")) {
+        //    l_recfile = a_recfile.substring(0, a_recfile.length() - 4);
+        //}
+        //XMLPAYLOAD = buildRecordPayload(l_recfile);
         // END WORKAROUND
-        //XMLPAYLOAD = buildRecordPayload(a_recfile); 
+        XMLPAYLOAD = buildRecordPayload(l_recfile); 
 
         //logger.info("Sending message ---->  " + XMLPAYLOAD);
         RC = m_connector.SendCommand(this, RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
@@ -1354,7 +1354,7 @@ public class XMSRestCall extends XMSCall {
                 setState(XMSCallState.CONNECTED);
                 UnblockIfNeeded(l_callbackevt);
                 //end end_playcollect
-            } else if (l_evt.eventType.contentEquals("end_playrecord")) {
+            } else if (l_evt.eventType.contentEquals("end_playrecord") || l_evt.eventType.contentEquals("end_record")) {
                 logger.info("Processing end_playrecord event");
                 m_pendingtransactionInfo.Reset();
                 if (getState() == XMSCallState.RECORD) {
@@ -2154,11 +2154,15 @@ public class XMSRestCall extends XMSCall {
         switch (RecordOptions.m_audioMimeCodec) {
             case AMR:
                 audiomime.setCodec(AudioCodecOption.AMR);
+                if (RecordOptions.m_audioMimeMode != null && !RecordOptions.m_audioMimeMode.isEmpty() ) {
+                    audiomime.setMode(RecordOptions.m_audioMimeMode);
+                }
                 break;
             case L_8:
                 audiomime.setCodec(AudioCodecOption.L_8);
-                break;
-            case L_16:
+                break;     
+            case L_16: 
+            case AUTOSELECT:
                 audiomime.setCodec(AudioCodecOption.L_16);
                 break;
             case MULAW:
@@ -2196,68 +2200,48 @@ public class XMSRestCall extends XMSCall {
                 break;
         }
 
-        if (RecordOptions.m_audioMimeMode != null && !RecordOptions.m_audioMimeMode.isEmpty()) {
-            audiomime.setMode(RecordOptions.m_audioMimeMode);
-        }
+        
 
-        RecordingVideoMimeParamsDocument.RecordingVideoMimeParams videomime = l_rec.addNewRecordingVideoMimeParams();
-
-        if (RecordOptions.m_videoMimeHeight != null && !RecordOptions.m_videoMimeHeight.isEmpty()) {
-            videomime.setHeight(RecordOptions.m_videoMimeHeight);
-        }
-
-        if (RecordOptions.m_videoMimeWidth != null && !RecordOptions.m_videoMimeWidth.isEmpty()) {
-            videomime.setHeight(RecordOptions.m_videoMimeWidth);
-        }
-
-        if (RecordOptions.m_videoMimeFramerate != null && !RecordOptions.m_videoMimeFramerate.isEmpty()) {
-            videomime.setHeight(RecordOptions.m_videoMimeFramerate);
-        }
-
-        if (RecordOptions.m_videoMimeMaxbitrate != null && !RecordOptions.m_videoMimeMaxbitrate.isEmpty()) {
-            videomime.setHeight(RecordOptions.m_videoMimeMaxbitrate);
-        }
-
-        if (RecordOptions.m_videoMimeLevel != null && !RecordOptions.m_videoMimeLevel.isEmpty()) {
-            videomime.setHeight(RecordOptions.m_videoMimeLevel);
-        }
-
-        if (RecordOptions.m_videoMimeProfile != null && !RecordOptions.m_videoMimeProfile.isEmpty()) {
-            videomime.setHeight(RecordOptions.m_videoMimeProfile);
-        }
-
-        switch (RecordOptions.m_videoMimeCodec) {
-            case H_264:
-                videomime.setCodec(VideoCodecOption.H_264);
-                break;
-            case H_263:
-                videomime.setCodec(VideoCodecOption.H_263);
-                break;
-            case H_263_1998:
-                videomime.setCodec(VideoCodecOption.H_263_1998);
-                break;
-            case MP_4_V_ES:
-                videomime.setCodec(VideoCodecOption.MP_4_V_ES);
-                break;
-            case JPEG:
-                videomime.setCodec(VideoCodecOption.JPEG);
-                break;
-            case VP_8:
-                videomime.setCodec(VideoCodecOption.VP_8);
-                break;
-            case VP_9:
-                videomime.setCodec(VideoCodecOption.VP_9);
-                break;
-            case NATIVE:
-                videomime.setCodec(VideoCodecOption.NATIVE);
-                break;
-            default:
-                System.out.println("Unknown video mime codec");
-                break;
-        }
-
-        l_rec.setRecordingAudioUri("file://" + a_recfile);
+        String a_recfile_audio = a_recfile;
         switch (RecordOptions.m_audioTypeOption) {
+            case AUDIO_AUTOSELECT:
+                if(a_recfile.toLowerCase().endsWith(".wav")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_WAV);
+                } else if(a_recfile.toLowerCase().endsWith(".pcmu") || a_recfile.toLowerCase().endsWith(".mulaw")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_BASIC);
+                }else if(a_recfile.toLowerCase().endsWith(".pcma") || a_recfile.toLowerCase().endsWith(".alaw")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_ALAW_BASIC);
+                }else if(a_recfile.toLowerCase().endsWith(".L8") ){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_L_8);
+                }else if(a_recfile.toLowerCase().endsWith(".L16") || a_recfile.toLowerCase().endsWith(".mulaw")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_L_16);
+                }else if(a_recfile.toLowerCase().endsWith(".aud") ){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_AUD);
+                }else if(a_recfile.toLowerCase().endsWith(".amr")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_AMR);
+                }else if(a_recfile.toLowerCase().endsWith(".amrwb") ){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_AMR_WB);
+                }else if(a_recfile.toLowerCase().endsWith(".3gp") || a_recfile.toLowerCase().endsWith(".3gpp")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_3_GPP);
+                }else if(a_recfile.toLowerCase().endsWith(".mp4") ){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_MP_4);
+                }else if(a_recfile.toLowerCase().endsWith(".mkv")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_MKV);
+                }else if(a_recfile.toLowerCase().endsWith(".webm")){
+                    l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_WEBM);
+                }else {
+
+                    if(RecordOptions.m_mediaType == XMSMediaType.VIDEO){
+                        //NOTE: This is a change from older versions, default if can't detect is now MP4, used to be AUD+VID
+                        //l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_AUD);
+                        a_recfile_audio = a_recfile+".mp4";
+                        l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_MP_4);
+                    } else {
+                        a_recfile_audio = a_recfile+".vox";
+                        l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_WAV);    
+                    }              
+                }
+                break;
             case AUDIO_X_WAV:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_WAV);
                 break;
@@ -2266,33 +2250,43 @@ public class XMSRestCall extends XMSCall {
                 break;
             case AUDIO_X_ALAW_BASIC:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_ALAW_BASIC);
+                
                 break;
             case AUDIO_L_8:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_L_8);
+                
                 break;
             case AUDIO_L_16:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_L_16);
+                
                 break;
             case AUDIO_X_AUD:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_AUD);
+                
                 break;
             case AUDIO_AMR:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_AMR);
+                
                 break;
             case AUDIO_AMR_WB:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_AMR_WB);
+                
                 break;
             case AUDIO_3_GPP:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_3_GPP);
+                
                 break;
             case AUDIO_MP_4:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_MP_4);
+                
                 break;
             case AUDIO_MKV:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_MKV);
+                
                 break;
             case AUDIO_WEBM:
                 l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_WEBM);
+                
                 break;
             case TEXT_URI_LIST:
                 l_rec.setRecordingAudioType(AudioTypeOption.TEXT_URI_LIST);
@@ -2302,10 +2296,90 @@ public class XMSRestCall extends XMSCall {
                 break;
         }
 
+        l_rec.setRecordingAudioUri("file://" + a_recfile_audio );
+        
         if (RecordOptions.m_mediaType.equals(XMSMediaType.VIDEO)) {
-            l_rec.setRecordingVideoUri("file://" + a_recfile);
+            
 
+            RecordingVideoMimeParamsDocument.RecordingVideoMimeParams videomime = l_rec.addNewRecordingVideoMimeParams();
+
+            if (RecordOptions.m_videoMimeHeight != null && !RecordOptions.m_videoMimeHeight.isEmpty()) {
+                videomime.setHeight(RecordOptions.m_videoMimeHeight);
+            }
+
+            if (RecordOptions.m_videoMimeWidth != null && !RecordOptions.m_videoMimeWidth.isEmpty()) {
+                videomime.setHeight(RecordOptions.m_videoMimeWidth);
+            }
+
+            if (RecordOptions.m_videoMimeFramerate != null && !RecordOptions.m_videoMimeFramerate.isEmpty()) {
+                videomime.setHeight(RecordOptions.m_videoMimeFramerate);
+            }
+
+            if (RecordOptions.m_videoMimeMaxbitrate != null && !RecordOptions.m_videoMimeMaxbitrate.isEmpty()) {
+                videomime.setHeight(RecordOptions.m_videoMimeMaxbitrate);
+            }
+
+            if (RecordOptions.m_videoMimeLevel != null && !RecordOptions.m_videoMimeLevel.isEmpty()) {
+                videomime.setHeight(RecordOptions.m_videoMimeLevel);
+            }
+
+            if (RecordOptions.m_videoMimeProfile != null && !RecordOptions.m_videoMimeProfile.isEmpty()) {
+                videomime.setHeight(RecordOptions.m_videoMimeProfile);
+            }
+
+            switch (RecordOptions.m_videoMimeCodec) {
+                case AUTOSELECT:
+                case H_264:
+                    videomime.setCodec(VideoCodecOption.H_264);
+                    break;
+                case H_263:
+                    videomime.setCodec(VideoCodecOption.H_263);
+                    break;
+                case H_263_1998:
+                    videomime.setCodec(VideoCodecOption.H_263_1998);
+                    break;
+                case MP_4_V_ES:
+                    videomime.setCodec(VideoCodecOption.MP_4_V_ES);
+                    break;
+                case JPEG:
+                    videomime.setCodec(VideoCodecOption.JPEG);
+                    break;
+                case VP_8:
+                    videomime.setCodec(VideoCodecOption.VP_8);
+                    break;
+                case VP_9:
+                    videomime.setCodec(VideoCodecOption.VP_9);
+                    break;
+                case NATIVE:
+                    videomime.setCodec(VideoCodecOption.NATIVE);
+                    break;
+
+                default:
+                    System.out.println("Unknown video mime codec");
+                    break;
+            }
+            String a_recfile_video = a_recfile;
             switch (RecordOptions.m_videoTypeOption) {
+                case VIDEO_AUTOSELECT:
+                    if(a_recfile.toLowerCase().endsWith(".vid") ){
+                        l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_X_VID);
+                    }else if(a_recfile.toLowerCase().endsWith(".3gp") || a_recfile.toLowerCase().endsWith(".3gpp")){
+                        l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_3_GPP);
+                    }else if(a_recfile.toLowerCase().endsWith(".jpg") || a_recfile.toLowerCase().endsWith(".jpeg")){
+                        l_rec.setRecordingVideoType(RecordingVideoTypeOption.IMAGE_JPEG);
+                    }else if(a_recfile.toLowerCase().endsWith(".mp4") ){
+                        l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_MP_4);
+                    }else if(a_recfile.toLowerCase().endsWith(".mkv")){
+                        l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_MKV);
+                    }else if(a_recfile.toLowerCase().endsWith(".webm")){
+                        l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_WEBM);
+                    }else {
+                        //NOTE: This is a change from older versions, default if can't detect is now MP4, used to be AUD+VID
+                            //l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_AUD);
+                            a_recfile_video = a_recfile+".mp4";
+                            l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_MP_4);      
+                }
+                break;
                 case VIDEO_X_VID:
                     l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_X_VID);
                     break;
@@ -2329,6 +2403,7 @@ public class XMSRestCall extends XMSCall {
                     break;
 
             }
+            l_rec.setRecordingVideoUri("file://" + a_recfile_video);
         }
 
         // Add the record properties - old way
