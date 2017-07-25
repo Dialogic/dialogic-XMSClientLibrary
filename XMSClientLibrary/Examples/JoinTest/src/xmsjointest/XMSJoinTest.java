@@ -29,13 +29,16 @@ public class XMSJoinTest {
             myCall2.WaitcallOptions.SetMediaType(XMSMediaType.VIDEO);
             myCall2.Waitcall();  
                 
-            myCall2.Join(myCall1);
+            //myCall2.Join(myCall1);
+            myCall1.Join(myCall2); 
             // or you could call myCall1.Join(myCall2); 
             // both will do the same thing and it is only
             // on one device to establish a full duplex connection
+            Sleep(15000);
             
+          // myCall1.UnJoin();
+           myCall2.UnJoin(myCall1);
            Sleep(15000);
-           
            myCall1.Dropcall();
            myCall2.Dropcall();
         }

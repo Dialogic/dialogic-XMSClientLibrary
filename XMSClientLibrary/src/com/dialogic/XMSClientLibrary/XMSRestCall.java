@@ -857,7 +857,7 @@ public class XMSRestCall extends XMSCall {
     @Override
     public XMSReturnCode Join(XMSCall a_othercall) {
         FunctionLogger logger = new FunctionLogger("Join", this, m_logger);
-
+        logger.args("othercall " + a_othercall + " " + JoincallOptions.toString());
         if (this.getState() == XMSCallState.NULL || a_othercall.getState() == XMSCallState.NULL) {
             logger.error("Unable to Join as one of the calls is in NULL state");
             return XMSReturnCode.INVALID_STATE;
@@ -871,8 +871,11 @@ public class XMSRestCall extends XMSCall {
         l_urlext = "calls/" + m_callIdentifier;
 
         ArrayList<String> l_playlist = new ArrayList<String>();
-
-        XMLPAYLOAD = buildJoinPayload(a_othercall.getCallIdentifier());
+        SetLastJoinID(a_othercall.getCallIdentifier());
+        //TODO- Sould likely put some check in here before we set this for the other side as only effects if sendrecv
+        ((XMSRestCall)a_othercall).SetLastJoinID(this.getCallIdentifier());
+        
+        XMLPAYLOAD = buildJoinPayload(m_LastJoinID);
 
         //logger.info("Sending message ---->  " + XMLPAYLOAD);
         RC = m_connector.SendCommand(this, RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
@@ -891,15 +894,34 @@ public class XMSRestCall extends XMSCall {
 
     }// end Join
 
+        /**
+     * UnJoin / UnRoute 2 Calls together
+     *
+     * @return
+     */
+    //TODO - This JoinID tracking should be changed.
+    String m_LastJoinID="";
+    public void SetLastJoinID(String a_lastJoinID){
+        m_LastJoinID=a_lastJoinID;
+    }
+    @Override
+    public XMSReturnCode UnJoin() {  
+        return UnJoin(m_LastJoinID);
+    }
+    @Override
+    public XMSReturnCode UnJoin(XMSCall a_othercall) {
+        return UnJoin(a_othercall.getCallIdentifier());
+    }
     /**
      * UnJoin / UnRoute 2 Calls together
      *
      * @return
      */
-    @Override
-    public XMSReturnCode UnJoin() {
+    
+    public XMSReturnCode UnJoin(String a_otherid) {
         FunctionLogger logger = new FunctionLogger("UnJoin", this, m_logger);
-
+        logger.args("othercall ID " + a_otherid + " " + UnJoincallOptions.toString());
+        
         if (this.getState() == XMSCallState.NULL) {
             logger.error("Unable to UnJoin as the call is in NULL state");
             return XMSReturnCode.INVALID_STATE;
@@ -913,13 +935,13 @@ public class XMSRestCall extends XMSCall {
 
         ArrayList<String> l_playlist = new ArrayList<String>();
 
-        XMLPAYLOAD = buildUnJoinPayload();
+        XMLPAYLOAD = buildUnJoinPayload(a_otherid);
 
         //logger.info("Sending message ---->  " + XMLPAYLOAD);
         RC = m_connector.SendCommand(this, RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
 
         if (RC.get_scr_status_code() == 200) {
-
+            
             return XMSReturnCode.SUCCESS;
 
         } else {
@@ -3182,10 +3204,40 @@ public class XMSRestCall extends XMSCall {
         // l_join.setTransactionId(getCallIdentifier()+"_"+m_transactionId++); 
         //l_join.setTransactionId(""); // Hard code this for now..
 
+        //if set to native, then just set it to no for both
         if (JoincallOptions.m_native) {
             l_join.setAudioTranscode(BooleanType.NO);
             l_join.setVideoTranscode(BooleanType.NO);
+        }//otherwise use what was actualy set
+        else{
+            l_join.setAudioTranscode(JoincallOptions.m_transcodeaudio?BooleanType.YES:BooleanType.NO);
+            l_join.setVideoTranscode(JoincallOptions.m_transcodevideo?BooleanType.YES:BooleanType.NO);
+            
         }
+        
+        
+        if(JoincallOptions.m_audiodirection == XMSMediaDirection.INACTIVE){
+            l_join.setAudio(MediaDirection.INACTIVE);
+        }
+        else if(JoincallOptions.m_audiodirection == XMSMediaDirection.SENDONLY){
+            l_join.setAudio(MediaDirection.SENDONLY);
+        }
+        else if(JoincallOptions.m_audiodirection == XMSMediaDirection.SENDRECV){
+            l_join.setAudio(MediaDirection.SENDRECV);
+        }
+        //If set to automatic, just use default processing and don't include the optional attribute
+        
+        if(JoincallOptions.m_videodirection == XMSMediaDirection.INACTIVE){
+            l_join.setVideo(MediaDirection.INACTIVE);
+        }
+        else if(JoincallOptions.m_videodirection == XMSMediaDirection.SENDONLY){
+            l_join.setVideo(MediaDirection.SENDONLY);
+        }
+        else if(JoincallOptions.m_videodirection == XMSMediaDirection.SENDRECV){
+            l_join.setVideo(MediaDirection.SENDRECV);
+        }
+        //If set to automatic, just use default processing and don't include the optional attribute
+        
         // logger.debug("RAW REST generated...." + l_WMS.toString());
         ByteArrayOutputStream l_newDialog = new ByteArrayOutputStream();
 
@@ -3218,7 +3270,7 @@ public class XMSRestCall extends XMSCall {
      * HISTORY :
      * ***********************************************************************
      */
-    private String buildUnJoinPayload() {
+    private String buildUnJoinPayload(String a_othercallid) {
         FunctionLogger logger = new FunctionLogger("buildUnJoinPayload", this, m_logger);
 
         String l_rqStr = "";
@@ -3250,10 +3302,30 @@ public class XMSRestCall extends XMSCall {
 
         // Add a new Play to the callAction
         l_unjoin = l_callAction.addNewUnjoin();
-        l_unjoin.setCallId(getCallIdentifier());
+        l_unjoin.setCallId(a_othercallid);
        // l_join.setTransactionId(getCallIdentifier()+"_"+m_transactionId++); 
         //l_join.setTransactionId(""); // Hard code this for now..
-
+      
+        if(UnJoincallOptions.m_audiodirection == XMSMediaDirection.INACTIVE){
+            l_unjoin.setAudio(MediaDirection.INACTIVE);
+        }
+        else if(UnJoincallOptions.m_audiodirection == XMSMediaDirection.SENDONLY){
+            l_unjoin.setAudio(MediaDirection.SENDONLY);
+        }
+        else if(UnJoincallOptions.m_audiodirection == XMSMediaDirection.SENDRECV){
+            l_unjoin.setAudio(MediaDirection.SENDRECV);
+        }
+        //If set to automatic, just use default processing and don't include the optional attribute
+        
+        if(UnJoincallOptions.m_videodirection == XMSMediaDirection.INACTIVE){
+            l_unjoin.setVideo(MediaDirection.INACTIVE);
+        }
+        else if(UnJoincallOptions.m_videodirection == XMSMediaDirection.SENDONLY){
+            l_unjoin.setVideo(MediaDirection.SENDONLY);
+        }
+        else if(UnJoincallOptions.m_videodirection == XMSMediaDirection.SENDRECV){
+            l_unjoin.setVideo(MediaDirection.SENDRECV);
+        }
         // logger.debug("RAW REST generated...." + l_WMS.toString());
         ByteArrayOutputStream l_newDialog = new ByteArrayOutputStream();
 
