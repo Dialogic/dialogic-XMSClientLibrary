@@ -128,7 +128,11 @@ public abstract class XMSConference extends XMSObject {
      //TODO Get Conference play working.  Will need to add all the enablement for the events as well
      public XMSReturnCode Record(String a_recfile){
          return XMSReturnCode.NOT_IMPLEMENTED;
-     }
+    }
+
+    public XMSReturnCode MultiRecord(String a_recfile) {
+        return XMSReturnCode.NOT_IMPLEMENTED;
+    }
      /** 
       * Force the Destroy the Conference resource from the server
       * By default this is done when the last participant is removed

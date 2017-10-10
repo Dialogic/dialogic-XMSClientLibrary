@@ -60,7 +60,7 @@ public class XMSRecordOptions {
         m_maxTime = "30s";
         m_audioMimeCodec = XMSAudioCodecOption.AUTOSELECT;
         m_audioMimeRate = XMSAudioRateOption.X_16000;
-        m_audioMimeMode = "7";
+        m_audioMimeMode = "";
         m_videoMimeHeight = "480";
         m_videoMimeWidth = "640";
         m_videoMimeCodec = XMSVideoCodecOption.AUTOSELECT;

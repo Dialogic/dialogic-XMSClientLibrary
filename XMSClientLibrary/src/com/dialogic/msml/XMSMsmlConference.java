@@ -122,7 +122,8 @@ public class XMSMsmlConference extends XMSConference implements Observer {
             if (msmlCall != null && msmlCall.msmlSip != null) {
                 //msmlCall.msmlSip.sendInfoWithoutConn(buildJoinConfVideoMsml(m_Name));
                 msmlCall.msmlSip.sendInfo(buildJoinConfVideoMsml(m_Name));
-                BlockIfNeeded(XMSEventType.CALL_INFO);
+                //BlockIfNeeded(XMSEventType.CALL_INFO);
+                msmlCall.blockCallObjectAddConf();
                 counter++;
             }
         } catch (Exception ex) {
@@ -229,6 +230,12 @@ public class XMSMsmlConference extends XMSConference implements Observer {
                 conf.createBye();
             }
         }
+    }
+
+    @Override
+    public XMSReturnCode Destroy() {
+        conf.createBye();
+        return XMSReturnCode.SUCCESS;
     }
 
     @Override
@@ -340,18 +347,19 @@ public class XMSMsmlConference extends XMSConference implements Observer {
         createConf.setMark("1");
         createConf.setTerm(BooleanDatatype.TRUE);
 
-        AudioMixType audioLayout = objectFactory.createAudioMixType();
-        audioLayout.setId("dialogicmix");
-        createConf.setAudiomix(audioLayout);
+        if (ConferenceOptions.m_MediaType == XMSMediaType.AUDIO) {
+            AudioMixType audioLayout = objectFactory.createAudioMixType();
+            audioLayout.setId("dialogicmix");
+            createConf.setAudiomix(audioLayout);
+        } else {
+            VideoLayoutType videoLayout = objectFactory.createVideoLayoutType();
+            RootType rootType = objectFactory.createRootType();
+            rootType.setSize("VGA");
+            videoLayout.setRoot(rootType);
 
-//        VideoLayoutType videoLayout = objectFactory.createVideoLayoutType();
-//
-//        RootType rootType = objectFactory.createRootType();
-//        rootType.setSize("VGA");
-//        videoLayout.setRoot(rootType);
-//
-//        videoLayout.getRegion().add(buildRegion("1", "0", "0", "1"));
-//        createConf.setVideolayout(videoLayout);
+            //videoLayout.getRegion().add(buildRegion("1", "0", "0", "1"));
+            createConf.setVideolayout(videoLayout);
+        }
         msml.getMsmlRequest().add(createConf);
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(Msml.class);
@@ -625,8 +633,8 @@ public class XMSMsmlConference extends XMSConference implements Observer {
             if (num == 1) {
                 videoLayout.getRegion().add(buildRegion("1", "0", "0", "1"));
             } else if (num == 2) {
-                videoLayout.getRegion().add(buildRegion("1", "0", "0", "1/2"));
-                videoLayout.getRegion().add(buildRegion("2", "50%", "0", "1/2"));
+                videoLayout.getRegion().add(buildRegion("1", "0", "25", "1/2"));
+                videoLayout.getRegion().add(buildRegion("2", "50%", "25", "1/2"));
             } else if (num <= 4) {
                 videoLayout.getRegion().add(buildRegion("1", "0", "0", "1/2"));
                 videoLayout.getRegion().add(buildRegion("2", "50%", "0", "1/2"));

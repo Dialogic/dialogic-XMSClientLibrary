@@ -133,6 +133,9 @@ public class XMSMsmlCall extends XMSCall implements Observer {
     @Override
     public XMSReturnCode Makecall(String dest) {
         try {
+            if (dest.contains("sip")) {
+                dest = dest.replace("sip:", "");
+            }
             setState(XMSCallState.MAKECALL);
             MakecallOptions.setCalledAddress(dest);
             if (!dest.isEmpty()) {
@@ -566,7 +569,7 @@ public class XMSMsmlCall extends XMSCall implements Observer {
                 if (e.getCall() == this.caller) {
                     this.msmlSip.createAckRequest(e.getRes());
                 } else if (this.caller == null) {
-                    if (this.callerToAdr != this.msmlSip.getToAddress()) {
+                    if (!this.callerToAdr.equalsIgnoreCase(this.msmlSip.getToAddress())) {
                         // connected to XMS now make an outbound call tot he dest
                         Makecall(this.callerToUserId + "@" + this.callerToAdr);
                     }
@@ -1479,5 +1482,9 @@ public class XMSMsmlCall extends XMSCall implements Observer {
      */
     public void setReinvite(boolean reinvite) {
         this.reinvite = reinvite;
+    }
+
+    public void blockCallObjectAddConf() throws InterruptedException {
+        BlockIfNeeded(XMSEventType.CALL_INFO);
     }
 }

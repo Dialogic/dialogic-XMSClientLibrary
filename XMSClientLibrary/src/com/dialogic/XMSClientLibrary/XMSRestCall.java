@@ -1377,7 +1377,7 @@ public class XMSRestCall extends XMSCall {
                 UnblockIfNeeded(l_callbackevt);
                 //end end_playcollect
             } else if (l_evt.eventType.contentEquals("end_playrecord") || l_evt.eventType.contentEquals("end_record")) {
-                logger.info("Processing end_playrecord event");
+                logger.info("Processing end_playrecord/end_record event");
                 m_pendingtransactionInfo.Reset();
                 if (getState() == XMSCallState.RECORD) {
 
@@ -2168,7 +2168,7 @@ public class XMSRestCall extends XMSCall {
 
         l_rec.setTerminateDigits(RecordOptions.m_terminateDigits);
         if (RecordOptions.m_maxTime != null && !RecordOptions.m_maxTime.isEmpty()) {
-            l_rec.setMaxTime(RecordOptions.m_timeoutValue);
+            l_rec.setMaxTime(RecordOptions.m_maxTime);
         }
 
         RecordingAudioMimeParamsDocument.RecordingAudioMimeParams audiomime = l_rec.addNewRecordingAudioMimeParams();
@@ -2222,9 +2222,12 @@ public class XMSRestCall extends XMSCall {
                 break;
         }
 
-        
-
         String a_recfile_audio = a_recfile;
+        if (RecordOptions.m_audioMimeMode != null && !RecordOptions.m_audioMimeMode.isEmpty()) {
+            audiomime.setMode(RecordOptions.m_audioMimeMode);
+        }
+
+        l_rec.setRecordingAudioUri("file://" + a_recfile);
         switch (RecordOptions.m_audioTypeOption) {
             case AUDIO_AUTOSELECT:
                 if(a_recfile.toLowerCase().endsWith(".wav")){
@@ -2316,13 +2319,11 @@ public class XMSRestCall extends XMSCall {
             default:
                 System.out.println("Unknown audio type option");
                 break;
-        }
+        }    
 
         l_rec.setRecordingAudioUri("file://" + a_recfile_audio );
         
         if (RecordOptions.m_mediaType.equals(XMSMediaType.VIDEO)) {
-            
-
             RecordingVideoMimeParamsDocument.RecordingVideoMimeParams videomime = l_rec.addNewRecordingVideoMimeParams();
 
             if (RecordOptions.m_videoMimeHeight != null && !RecordOptions.m_videoMimeHeight.isEmpty()) {
@@ -2351,6 +2352,7 @@ public class XMSRestCall extends XMSCall {
 
             switch (RecordOptions.m_videoMimeCodec) {
                 case AUTOSELECT:
+                    break;
                 case H_264:
                     videomime.setCodec(VideoCodecOption.H_264);
                     break;
@@ -2375,11 +2377,11 @@ public class XMSRestCall extends XMSCall {
                 case NATIVE:
                     videomime.setCodec(VideoCodecOption.NATIVE);
                     break;
-
                 default:
                     System.out.println("Unknown video mime codec");
                     break;
             }
+            l_rec.setRecordingVideoUri("file://" + a_recfile);
             String a_recfile_video = a_recfile;
             switch (RecordOptions.m_videoTypeOption) {
                 case VIDEO_AUTOSELECT:

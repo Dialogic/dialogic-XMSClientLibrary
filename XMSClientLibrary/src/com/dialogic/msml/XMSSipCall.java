@@ -78,7 +78,7 @@ public class XMSSipCall extends Observable {
     static private Map<Integer, ContactHeader> contactHeadersMap = new HashMap<>();
     static private Map<String, CSeqHeader> cSeqHeadersMap = new HashMap<>();
     static private Map<String, ContentTypeHeader> contentTypeHeaderMap = new HashMap<>();
-    private List<XMSSipCall> pendingCallList = new ArrayList();
+    static private List<String> pendingCallList = new ArrayList();
 
     public XMSSipCall(XMSMsmlConnector connector) {
         this.dialog = null;
@@ -155,20 +155,22 @@ public class XMSSipCall extends Observable {
             case Response.OK:
                 switch (cSeq.getMethod()) {
                     case Request.INVITE:
-                        if (pendingCallList.contains(this)) {
+                        String callid = ((CallIdHeader) response.getHeader(CallIdHeader.NAME)).getCallId();
+                        if (pendingCallList.contains(callid)) {
                             System.out.println("repeated request");
                             // request repeated do not create an event
                         } else {
                             if (this.isACKOn200) {
                                 createAckRequest(response);
                             }
-                            pendingCallList.add(this);
+                            pendingCallList.add(this.getCallId());
                             this.setRemoteSdp(new String(response.getRawContent()));
                             MsmlEvent oK = createResponseEvent(response, MsmlEventType.CONNECTING);
                             setValue(oK);
                         }
                         break;
                     case Request.INFO:
+                        System.out.println("INFO handle");
                         MsmlEvent info = createResponseEvent(response, MsmlEventType.INFORESPONSE);
                         setValue(info);
                         break;
@@ -327,7 +329,7 @@ public class XMSSipCall extends Observable {
      * @param response
      */
     public void createAckRequest(Response response) {
-        logger.info("CREATING ACK REQUEST ");
+        System.out.println("CREATING ACK REQUEST ");
         Request ackRequest;
         try {
             if (this.getDialog() != null) {
@@ -539,13 +541,11 @@ public class XMSSipCall extends Observable {
         try {
             Response okResponse = messageFactory.createResponse(Response.OK, this.getServerTransaction().getRequest());
             Address contactAddress = null;
-            System.out.println("linphone" + reqToAddress);
             String reqToAddressString = reqToAddress.toString();
             Pattern pattern = Pattern.compile("<.*?>");
             Matcher m = pattern.matcher(reqToAddressString);
             if (m.find()) {
-                System.out.println(m.group(0));
-                reqToAddressString = m.group(0);;
+                reqToAddressString = m.group(0);
             }
             if (port <= 0) {
                 if (reqToAddressString.contains("<")) {

@@ -360,6 +360,46 @@ public class XMSRestConference extends XMSConference {
 
     } // end record
 
+    @Override
+    public XMSReturnCode MultiRecord(String a_file) {
+        FunctionLogger logger = new FunctionLogger("Record", this, m_logger);
+        logger.args("Record " + a_file + " " + RecordOptions);
+        String XMLPAYLOAD;
+        SendCommandResponse RC;
+
+        String l_urlext;
+        l_urlext = "conferences/" + m_callIdentifier;
+
+        XMLPAYLOAD = buildMultiRecordPayload(a_file);
+
+        //logger.info("Sending message ---->  " + XMLPAYLOAD);
+        RC = m_connector.SendCommand(this, RESTOPERATION.PUT, l_urlext, XMLPAYLOAD);
+
+        if (RC.get_scr_status_code() == 200) {
+            m_pendingtransactionInfo.setDescription("Record file=" + a_file);
+            m_pendingtransactionInfo.setTransactionId(RC.get_scr_transaction_id());
+            m_pendingtransactionInfo.setResponseData(RC);
+
+            //setState(XMSCallState.PLAY);
+            try {
+                BlockIfNeeded(XMSEventType.CALL_RECORD_END);
+            } catch (InterruptedException ex) {
+                logger.error("Exception:" + ex);
+            }
+
+            return XMSReturnCode.SUCCESS;
+
+        } else {
+
+            logger.info("Record Failed, Status Code: " + RC.get_scr_status_code());
+
+            //setState(XMSCallState.NULL);
+            return XMSReturnCode.FAILURE;
+
+        }
+
+    }
+
     /**
      * Force the Stop of the last active IO function
      *
@@ -756,17 +796,218 @@ public class XMSRestConference extends XMSConference {
         // Add a new Record to the callAction
         l_rec = l_confAction.addNewRecord();
 
-        l_rec.setTerminateDigits(RecordOptions.m_terminateDigits); // Hard code this for now..
-
-        uriString = a_file;
-        String l_uristring = uriString;
-
-        if (uriString.toLowerCase().endsWith(".wav") || uriString.toLowerCase().endsWith(".vid")) {
-            l_uristring = uriString.substring(0, uriString.length() - 4);
+        l_rec.setTerminateDigits(RecordOptions.m_terminateDigits);
+        if (RecordOptions.m_maxTime != null && !RecordOptions.m_maxTime.isEmpty()) {
+            l_rec.setMaxTime(RecordOptions.m_timeoutValue);
         }
-        // TO DO: May need to append the MediaDefaultDirectory
 
-        l_rec.setRecordingUri("file://" + l_uristring);
+        RecordingAudioMimeParamsDocument.RecordingAudioMimeParams audiomime = l_rec.addNewRecordingAudioMimeParams();
+//        audiomime.setCodec(AudioCodecOption.OPUS);
+//        //audiomime.setRate(AudioRateOption.X_8000);
+
+        switch (RecordOptions.m_audioMimeCodec) {
+            case AMR:
+                audiomime.setCodec(AudioCodecOption.AMR);
+                break;
+            case L_8:
+                audiomime.setCodec(AudioCodecOption.L_8);
+                break;
+            case L_16:
+                audiomime.setCodec(AudioCodecOption.L_16);
+                break;
+            case MULAW:
+                audiomime.setCodec(AudioCodecOption.MULAW);
+                break;
+            case ALAW:
+                audiomime.setCodec(AudioCodecOption.ALAW);
+                break;
+            case AMR_WB:
+                audiomime.setCodec(AudioCodecOption.AMR_WB);
+                break;
+            case OPUS:
+                audiomime.setCodec(AudioCodecOption.OPUS);
+                break;
+            case NATIVE:
+                audiomime.setCodec(AudioCodecOption.NATIVE);
+                break;
+            default:
+                System.out.println("Unknown audio mime codec");
+                break;
+        }
+
+        switch (RecordOptions.m_audioMimeRate) {
+            case X_8000:
+                audiomime.setRate(AudioRateOption.X_8000);
+                break;
+            case X_11025:
+                audiomime.setRate(AudioRateOption.X_11025);
+                break;
+            case X_16000:
+                audiomime.setRate(AudioRateOption.X_16000);
+                break;
+            default:
+                System.out.println("Unknown audio mime rate");
+                break;
+        }
+
+        if (RecordOptions.m_audioMimeMode != null && !RecordOptions.m_audioMimeMode.isEmpty()) {
+            audiomime.setMode(RecordOptions.m_audioMimeMode);
+        }
+
+        l_rec.setRecordingAudioUri("file://" + a_file);
+//        l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_WEBM);
+//
+        RecordingVideoMimeParamsDocument.RecordingVideoMimeParams videomime = l_rec.addNewRecordingVideoMimeParams();
+
+        if (RecordOptions.m_videoMimeHeight != null && !RecordOptions.m_videoMimeHeight.isEmpty()) {
+            videomime.setHeight(RecordOptions.m_videoMimeHeight);
+        }
+
+        if (RecordOptions.m_videoMimeWidth != null && !RecordOptions.m_videoMimeWidth.isEmpty()) {
+            videomime.setHeight(RecordOptions.m_videoMimeWidth);
+        }
+
+        if (RecordOptions.m_videoMimeFramerate != null && !RecordOptions.m_videoMimeFramerate.isEmpty()) {
+            videomime.setHeight(RecordOptions.m_videoMimeFramerate);
+        }
+
+        if (RecordOptions.m_videoMimeMaxbitrate != null && !RecordOptions.m_videoMimeMaxbitrate.isEmpty()) {
+            videomime.setHeight(RecordOptions.m_videoMimeMaxbitrate);
+        }
+
+        if (RecordOptions.m_videoMimeLevel != null && !RecordOptions.m_videoMimeLevel.isEmpty()) {
+            videomime.setHeight(RecordOptions.m_videoMimeLevel);
+        }
+
+        if (RecordOptions.m_videoMimeProfile != null && !RecordOptions.m_videoMimeProfile.isEmpty()) {
+            videomime.setHeight(RecordOptions.m_videoMimeProfile);
+        }
+
+        switch (RecordOptions.m_videoMimeCodec) {
+            case H_264:
+                videomime.setCodec(VideoCodecOption.H_264);
+                break;
+            case H_263:
+                videomime.setCodec(VideoCodecOption.H_263);
+                break;
+            case H_263_1998:
+                videomime.setCodec(VideoCodecOption.H_263_1998);
+                break;
+            case MP_4_V_ES:
+                videomime.setCodec(VideoCodecOption.MP_4_V_ES);
+                break;
+            case JPEG:
+                videomime.setCodec(VideoCodecOption.JPEG);
+                break;
+            case VP_8:
+                videomime.setCodec(VideoCodecOption.VP_8);
+                break;
+            case VP_9:
+                videomime.setCodec(VideoCodecOption.VP_9);
+                break;
+            case NATIVE:
+                videomime.setCodec(VideoCodecOption.NATIVE);
+                break;
+            default:
+                System.out.println("Unknown video mime codec");
+                break;
+        }
+
+        switch (RecordOptions.m_audioTypeOption) {
+            case AUDIO_X_WAV:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_WAV);
+                break;
+            case AUDIO_BASIC:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_BASIC);
+                break;
+            case AUDIO_X_ALAW_BASIC:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_ALAW_BASIC);
+                break;
+            case AUDIO_L_8:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_L_8);
+                break;
+            case AUDIO_L_16:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_L_16);
+                break;
+            case AUDIO_X_AUD:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_AUD);
+                break;
+            case AUDIO_AMR:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_AMR);
+                break;
+            case AUDIO_AMR_WB:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_AMR_WB);
+                break;
+            case AUDIO_3_GPP:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_3_GPP);
+                break;
+            case AUDIO_MP_4:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_MP_4);
+                break;
+            case AUDIO_MKV:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_MKV);
+                break;
+            case AUDIO_WEBM:
+                l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_WEBM);
+                break;
+            case TEXT_URI_LIST:
+                l_rec.setRecordingAudioType(AudioTypeOption.TEXT_URI_LIST);
+                break;
+            default:
+                System.out.println("Unknown audio type option");
+                break;
+        }
+
+        if (RecordOptions.m_mediaType.equals(XMSMediaType.VIDEO)) {
+            l_rec.setRecordingVideoUri("file://" + a_file);
+
+            switch (RecordOptions.m_videoTypeOption) {
+                case VIDEO_X_VID:
+                    l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_X_VID);
+                    break;
+                case VIDEO_3_GPP:
+                    l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_3_GPP);
+                    break;
+                case IMAGE_JPEG:
+                    l_rec.setRecordingVideoType(RecordingVideoTypeOption.IMAGE_JPEG);
+                    break;
+                case VIDEO_MP_4:
+                    l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_MP_4);
+                    break;
+                case VIDEO_MKV:
+                    l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_MKV);
+                    break;
+                case VIDEO_WEBM:
+                    l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_WEBM);
+                    break;
+                default:
+                    System.out.println("Unknown video type option");
+                    break;
+
+            }
+        }
+
+//        videomime.setHeight("480");
+//        videomime.setWidth("640");
+//        videomime.setCodec(VideoCodecOption.VP_8);
+//        videomime.setFramerate("15");
+//        videomime.setMaxbitrate("768000");
+//        videomime.setLevel("3.1");
+//        videomime.setProfile("66");
+//        l_rec.setRecordingVideoMimeParams(videomime);
+//
+//        l_rec.setRecordingVideoUri("file://" + a_file);
+//        l_rec.setRecordingVideoType(RecordingVideoTypeOption.VIDEO_WEBM);
+
+//        uriString = a_file;
+//        String l_uristring = uriString;
+//
+//        if (uriString.toLowerCase().endsWith(".wav") || uriString.toLowerCase().endsWith(".vid")) {
+//            l_uristring = uriString.substring(0, uriString.length() - 4);
+//        }
+//        // TO DO: May need to append the MediaDefaultDirectory
+//
+//        l_rec.setRecordingUri("file://" + l_uristring);
   //              logger.debug("Added [" + uriString + "]");
 
         //logger.debug("RAW REST generated...." + l_WMS.toString());
@@ -783,6 +1024,87 @@ public class XMSRestConference extends XMSConference {
         //logger.debug ("Returning Payload:\n " + l_rqStr);
         return l_rqStr;  // Return the requested string...
     } // end buildPlayPayload
+
+    /**
+     * Currently supports audio only
+     * @param a_file
+     * @return
+     */
+    private String buildMultiRecordPayload(String a_file) {
+        FunctionLogger logger = new FunctionLogger("buildRecordPayload", this, m_logger);
+        String l_rqStr = "";
+        String uriString = "";
+
+        WebServiceDocument l_WMSdoc;
+        WebServiceDocument.WebService l_WMS;
+
+        XmlNMTOKEN l_ver;
+
+        ConferenceDocument.Conference l_conf;
+        ConfActionDocument.ConfAction l_confAction;
+        //CallActionDocument.CallAction l_callAction; // Call Action instance
+
+        // Create a new Web Service Doc Instance
+        l_WMSdoc = WebServiceDocument.Factory.newInstance();
+        l_WMS = l_WMSdoc.addNewWebService();
+
+        // Create a new XMLToken Instance
+        l_ver = XmlNMTOKEN.Factory.newInstance();
+        l_ver.setStringValue("1.0");
+        l_WMS.xsetVersion(l_ver);
+
+        // add a new call
+        l_conf = l_WMS.addNewConference();
+
+        // Add a new Call Action to the call
+        l_confAction = l_conf.addNewConfAction();
+
+        String first = null;
+        String second = null;
+        if (m_partylist.size() == 2) {
+            for (XMSCall party : m_partylist) {
+                if (first == null) {
+                    first = party.getCallIdentifier();
+                } else {
+                    second = party.getCallIdentifier();
+                }
+            }
+        }
+
+        MultiRecordDocument.MultiRecord l_rec = l_confAction.addNewMultiRecord();
+
+        l_rec.setTerminateDigits(RecordOptions.m_terminateDigits); // Hard code this for now..
+        l_rec.setMaxTime("infinite");
+
+        RecordTrackDocument.RecordTrack recordTrack1 = l_rec.addNewRecordTrack();
+        if (first != null) {
+            recordTrack1.setId(first);
+            recordTrack1.setMedia(RecordTrackMedia.AUDIO);
+        }
+
+        RecordTrackDocument.RecordTrack recordTrack2 = l_rec.addNewRecordTrack();
+        if (second != null) {
+            recordTrack2.setId(second);
+            recordTrack2.setMedia(RecordTrackMedia.AUDIO);
+        }
+
+        l_rec.setRecordingAudioUri("file://" + a_file);
+        l_rec.setRecordingAudioType(AudioTypeOption.AUDIO_X_WAV);
+
+        //logger.debug("RAW REST generated...." + l_WMS.toString());
+        ByteArrayOutputStream l_newDialog = new ByteArrayOutputStream();
+
+        try {
+            l_WMSdoc.save(l_newDialog);
+            l_rqStr = l_WMSdoc.toString();
+
+        } catch (IOException ex) {
+            logger.error(ex);
+        }
+
+        //logger.debug ("Returning Payload:\n " + l_rqStr);
+        return l_rqStr;  // Return the requested string...
+    }
 
     /**
      * CLASS TYPE : private METHOD : buildStopPayload

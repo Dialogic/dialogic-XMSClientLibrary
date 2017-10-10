@@ -38,6 +38,10 @@ public class MyCallbacks implements XMSEventCallback {
                     addr = myCall.getConnectionAddress();
                     //Set the Record options to only record for 10seconds
                     myCall.RecordOptions.SetMaxTime(10);
+                    myCall.RecordOptions.SetTerminateDigits("#");
+                    myCall.RecordOptions.setAudioMimeCodec(XMSAudioCodecOption.L_16);
+                    myCall.RecordOptions.setAudioMimeRate(XMSAudioRateOption.X_8000);
+                    myCall.RecordOptions.setAudioTypeOption(XMSAudioTypeOption.AUDIO_X_WAV);
                     //Record a file
                     myState = AppState.RECORD;
                     myCall.Record("echotest.wav");
