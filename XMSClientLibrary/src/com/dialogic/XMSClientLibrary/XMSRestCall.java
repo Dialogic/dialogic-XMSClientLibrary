@@ -1483,6 +1483,7 @@ public class XMSRestCall extends XMSCall {
                     }
                 }
                 if (WaitcallOptions.m_autoConnectEnabled) {
+                    //Acceptcall();
                     Answercall();
                     //l_callbackevt.CreateEvent(XMSEventType.CALL_CONNECTED, this, "", "", l_evt.toString());
                     //UnblockIfNeeded(l_callbackevt);
@@ -1902,7 +1903,7 @@ public class XMSRestCall extends XMSCall {
             if (MakecallOptions.m_cpaEnabled) {
                 l_call.setCpa(BooleanType.YES);
             } else {
-                l_call.setCpa(BooleanType.YES);
+                l_call.setCpa(BooleanType.NO);
             } // end if
 
             // Set ICE enabled parm
@@ -1982,6 +1983,7 @@ public class XMSRestCall extends XMSCall {
                 l_call.setContentType(MakecallOptions.m_content_type);
             }
         }
+        
         if (!MakecallOptions.m_headers.isEmpty()) {
 
             String headers = "";
@@ -2331,23 +2333,23 @@ public class XMSRestCall extends XMSCall {
             }
 
             if (RecordOptions.m_videoMimeWidth != null && !RecordOptions.m_videoMimeWidth.isEmpty()) {
-                videomime.setHeight(RecordOptions.m_videoMimeWidth);
+                videomime.setWidth(RecordOptions.m_videoMimeWidth);
             }
 
             if (RecordOptions.m_videoMimeFramerate != null && !RecordOptions.m_videoMimeFramerate.isEmpty()) {
-                videomime.setHeight(RecordOptions.m_videoMimeFramerate);
+                videomime.setFramerate(RecordOptions.m_videoMimeFramerate);
             }
 
             if (RecordOptions.m_videoMimeMaxbitrate != null && !RecordOptions.m_videoMimeMaxbitrate.isEmpty()) {
-                videomime.setHeight(RecordOptions.m_videoMimeMaxbitrate);
+                videomime.setMaxbitrate(RecordOptions.m_videoMimeMaxbitrate);
             }
 
             if (RecordOptions.m_videoMimeLevel != null && !RecordOptions.m_videoMimeLevel.isEmpty()) {
-                videomime.setHeight(RecordOptions.m_videoMimeLevel);
+                //videomime.setVideoMimeLevel(RecordOptions.m_videoMimeLevel);
             }
 
             if (RecordOptions.m_videoMimeProfile != null && !RecordOptions.m_videoMimeProfile.isEmpty()) {
-                videomime.setHeight(RecordOptions.m_videoMimeProfile);
+                videomime.setProfile(RecordOptions.m_videoMimeProfile);
             }
 
             switch (RecordOptions.m_videoMimeCodec) {
