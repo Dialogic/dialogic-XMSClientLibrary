@@ -7,4 +7,7 @@
     <system systemId="file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/msml.xsd" uri="xml-resources/jaxb/MSMLXML/msml.xsd"/>
     <system systemId="file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/xml.xsd" uri="xml-resources/jaxb/MSMLXML/xml.xsd"/>
     <system systemId="file:/C:/Users/dwolansk/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/msml-dialogic-datatypes.xsd" uri="xml-resources/jaxb/MSMLXML/msml-dialogic-datatypes.xsd"/>
+    <system systemId="file:/C:/Users/wolan/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/msml.xsd" uri="xml-resources/jaxb/XMSMSML/msml.xsd"/>
+    <system systemId="file:/C:/Users/wolan/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/xml.xsd" uri="xml-resources/jaxb/XMSMSML/xml.xsd"/>
+    <system systemId="file:/C:/Users/wolan/Documents/GitHub/dialogic-XMSClientLibrary/XMSClientLibrary/xml-resources/jaxb/JAXB%20Binding/msml-dialogic-datatypes.xsd" uri="xml-resources/jaxb/XMSMSML/msml-dialogic-datatypes.xsd"/>
 </catalog>

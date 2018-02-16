@@ -11,19 +11,19 @@
     <target name="jaxb-code-generation" depends="xjc-typedef-target,-do-init,-init-macrodef-javac">
         <mkdir dir="${build.generated.sources.dir}/jaxb" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
         <mkdir dir="build/generated/jaxbCache" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
-        <mkdir dir="build/generated/jaxbCache/MSMLXML"/>
-        <xjc package="com.dialogic.xms.msml" destdir="build/generated/jaxbCache/MSMLXML" catalog="catalog.xml">
+        <mkdir dir="build/generated/jaxbCache/XMSMSML"/>
+        <xjc package="com.dialogic.msml" destdir="build/generated/jaxbCache/XMSMSML" catalog="catalog.xml">
             <classpath>
                 <pathelement location="${src.dir}"/>
                 <pathelement path="${jaxbwiz.xjcrun.classpath}"/>
             </classpath>
             <arg value="-xmlschema"/>
-            <schema file="xml-resources/jaxb/MSMLXML/msml.xsd"/>
-            <depends file="xml-resources/jaxb/MSMLXML/msml.xsd"/>
-            <produces dir="build/generated/jaxbCache/MSMLXML"/>
+            <schema file="xml-resources/jaxb/XMSMSML/msml.xsd"/>
+            <depends file="xml-resources/jaxb/XMSMSML/msml.xsd"/>
+            <produces dir="build/generated/jaxbCache/XMSMSML"/>
         </xjc>
         <copy todir="${build.generated.sources.dir}/jaxb">
-            <fileset dir="build/generated/jaxbCache/MSMLXML"/>
+            <fileset dir="build/generated/jaxbCache/XMSMSML"/>
         </copy>
     </target>
 </project>
